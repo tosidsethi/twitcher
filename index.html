@@ -1,9 +1,89 @@
-<!DOCTYPE <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-	<title>Twitcher</title>
+	<title>Twitcher : TWITCH.TV Search Stream</title>
+	<link rel="stylesheet" type="text/css" href="styles/main.css"/>
+	<script type="text/javascript" src="scripts/twitcher.js"></script>
+	<script type="text/javascript">
+		$ = Twitcher.$;
+		$$ = Twitcher.$$;
+
+		$.custParams = {
+			headers : {
+				'Accept' : 'application/vnd.twitchtv.v3+json'
+			},
+
+			method : 'GET',
+			url : 'https://api.twitch.tv/kraken/search/streams'
+
+		}
+
+		$.queryParams = {
+			q : 'batman',
+			limit : '5',
+			offset : '0' 
+		}
+
+		document.addEventListener("DOMContentLoaded", function() {
+			var headers     = $.custParams.headers,
+	            headersKeys = Object.getOwnPropertyNames(headers),
+	            method      = $.custParams.method,
+	            url         = $.custParams.url,
+	            i;
+
+	        if (method.match(/^GET$/i)) {
+	        	url += "?";
+	        	for(var query in $.queryParams){
+	        		var param = query + "=" + $.queryParams[query]+"&";
+	        		url += param;
+	        	}
+	        }
+
+	        var request = new XMLHttpRequest();
+	        request.open(method, url, true);
+
+	        for (i = headersKeys.length - 1; i >= 0; i--) {
+	            request.setRequestHeader(headersKeys[i], headers[headersKeys[i]]);
+	        }
+
+	        request.onreadystatechange = function () {
+	            if (request.readyState == 4 && request.status == 200) {
+	                /*if (!custParams.post(result, request.response, custParams)) {
+	                    custParams.open(input, result);
+	                }*/
+	                console.log("got the result");
+	                console.log(request.response);
+	            }
+	        };
+
+	        request.send(url);
+
+	        //return console.log(request.response);
+     
+		});
+	</script>
 </head>
 <body>
 	<h1>HELLO</h1>
+	<section id = "twitcher-search">
+
+		<label>
+			Search Twitcher:<br/>
+			<input autofocus class="Twitcher" data-list="Ada, Java, JavaScript, Brainfuck, LOLCODE, Node.js, Ruby on Rails" />
+			<button id="twitcher-submit" type="button">Search</button>
+		</label>
+
+	</section>
+	<section id="twitcher-result">
+		<div id="twitcher-result-head">
+			<span>total : 76</span><a>Prev</a><span>1/20</span><a>Next</a>
+		</div>
+		<div id="twitcher-result-body">
+			<div class="twitcher-result-body-stream" id="twitcher-result-body-stream-1">
+				<div class="twitcher-result-body-stream-left"></div>
+				<div class="twitcher-result-body-stream-right"></div>
+			</div>
+		</div>
+	</section>
 </body>
 </html>
