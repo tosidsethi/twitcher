@@ -20,14 +20,18 @@
 
  		configure.call(this, {
 			minChars: 2,
-			maxItems: 10,
+			maxItems: 6,
 			autoFirst: false,
 			filter: Twitcher.FILTER_CONTAINS,
 			
 			item: function (text, input) {
-				//console.log(text, input);
 				return $.create("li", {
-					innerHTML: text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>")
+					innerHTML: text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>"),
+					id:text});			
+			},
+			itemImg: function (text) {
+				return $.create("img", {
+					src : self.bufferList[text]
 				});
 			},
 			replace: function (text) {
@@ -35,12 +39,16 @@
 			}
 		}, o);
 
+		if(self.opened){
+			self.ul.li.img = $.create("img")
+		}
+
 		this.index = -1;
 
 		// Create necessary elements
 
 		this.container = $.create("div", {
-			className: "awesomplete",
+			className: "twitcher-search",
 			around: input
 		});
 
@@ -94,10 +102,8 @@
 			}
 		});
 
-		$.bind(this.input.form, {"submit": this.close.bind(this)});
-
 		$.bind(document.getElementById('twitcher-submit'), {"mousedown" : function(){
-			alert('Submitted');
+			console.log('Submitted', self.input.value, JSON.stringify(self.bufferList));
 		}});
 
 		$.bind(this.ul, {"mousedown": function(evt) {
@@ -115,14 +121,14 @@
 			};
 		}});
 
-		this.list = o.list || [];
+		this.list = o.list || {};
 
 		Twitcher.all.push(this);
  	} 
 
  	Twitcher.prototype = {
 		set list(list) {
-			if (Array.isArray(list)) {
+			if (typeof list === 'object') {
 				this.bufferList = list;
 			}
 			
@@ -169,13 +175,13 @@
 			var lis = this.ul.children;
 
 			if (this.selected) {
-				lis[this.index].setAttribute("aria-selected", "false");
+				lis[this.index].setAttribute("selected", "false");
 			}
 
 			this.index = i;
 
 			if (i > -1 && lis.length > 0) {
-				lis[i].setAttribute("aria-selected", "true");
+				lis[i].setAttribute("selected", "true");
 				this.status.textContent = lis[i].textContent;
 			}
 		},
@@ -225,8 +231,10 @@
 					})
 					.sort(this.sort)
 					.every(function(text, i) {
-						self.ul.appendChild(self.item(text, value));
-
+						var listElem = self.item(text, value);
+						self.ul.appendChild(listElem);
+						//console.log(listElem);
+						listElem.appendChild(self.itemImg(text));
 						return i < self.maxItems - 1;
 					});
 
@@ -243,10 +251,10 @@
 
 		post: function (custParams, queryParams) {
 	        	        
-	        var headers     = $.custParams.headers,
+	        var headers     = custParams.headers,
 	            headersKeys = Object.getOwnPropertyNames(headers),
-	            method      = $.custParams.method,
-	            url         = $.custParams.url,
+	            method      = custParams.method,
+	            url         = custParams.url,
 	            self		= this,
 	            i;
 
