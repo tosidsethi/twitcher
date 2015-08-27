@@ -25,6 +25,7 @@
 			filter: Twitcher.FILTER_CONTAINS,
 			
 			item: function (text, input) {
+				//console.log(text, input);
 				return $.create("li", {
 					innerHTML: text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>")
 				});
@@ -59,8 +60,14 @@
 		// Bind events
 
 		$.bind(this.input, {
-			"input": this.evaluate.bind(this),
-			"blur": this.close.bind(this),
+
+			"input": function(){
+				setTimeout(self.evaluate.bind(self), 300);
+			},
+			"blur": function(){
+				self.close.call(self);
+				console.log("los focus");
+			},
 			"keydown": function(evt) {
 				var c = evt.keyCode;
 
@@ -68,8 +75,13 @@
 				// Enter / Esc / Up / Down
 				if(self.opened) {
 					if (c === 13 && self.selected) { // Enter
+						console.log('Pressed Return');
 						evt.preventDefault();
 						self.select();
+					}
+					else if(c==13 && !self.selected) {
+						console.log('Pressed Return');
+						self.close();
 					}
 					else if (c === 27) { // Esc
 						self.close();
@@ -84,6 +96,10 @@
 
 		$.bind(this.input.form, {"submit": this.close.bind(this)});
 
+		$.bind(document.getElementById('twitcher-submit'), {"mousedown" : function(){
+			alert('Submitted');
+		}});
+
 		$.bind(this.ul, {"mousedown": function(evt) {
 			var li = evt.target;
 
@@ -96,16 +112,10 @@
 				if (li) {
 					self.select(li);
 				}
-			}
+			};
 		}});
 
-		if (this.input.hasAttribute("list")) {
-			this.list = "#" + input.getAttribute("list");
-			input.removeAttribute("list");
-		}
-		else {
-			this.list = this.input.getAttribute("data-list") || o.list || [];
-		}
+		this.list = o.list || [];
 
 		Twitcher.all.push(this);
  	} 
@@ -115,19 +125,7 @@
 			if (Array.isArray(list)) {
 				this.bufferList = list;
 			}
-			else if (typeof list === "string" && list.indexOf(",") > -1) {
-					this._list = list.split(/\s*,\s*/);
-			}
-			else { // Element or CSS selector
-				list = $(list);
-
-				if (list && list.children) {
-					this._list = slice.apply(list.children).map(function (el) {
-						return el.textContent.trim();
-					});
-				}
-			}
-
+			
 			if (document.activeElement === this.input) {
 				this.evaluateList();
 			}
@@ -144,8 +142,6 @@
 		close: function () {
 			this.ul.setAttribute("hidden", "");
 			this.index = -1;
-
-			$.fire(this.input, "awesomplete-close");
 		},
 
 		open: function () {
@@ -154,8 +150,6 @@
 			if (this.autoFirst && this.index === -1) {
 				this.goto(0);
 			}
-
-			$.fire(this.input, "awesomplete-open");
 		},
 
 		next: function () {
@@ -184,8 +178,6 @@
 				lis[i].setAttribute("aria-selected", "true");
 				this.status.textContent = lis[i].textContent;
 			}
-
-			$.fire(this.input, "awesomplete-highlight");
 		},
 
 		select: function (selected) {
@@ -194,17 +186,10 @@
 			if (selected) {
 				var prevented;
 
-				$.fire(this.input, "awesomplete-select", {
-					text: selected.textContent,
-					preventDefault: function () {
-						prevented = true;
-					}
-				});
-
 				if (!prevented) {
 					this.replace(selected.textContent);
 					this.close();
-					$.fire(this.input, "awesomplete-selectcomplete");
+					
 				}
 			}
 		},
@@ -386,17 +371,6 @@
 		}
 	};
 
-	$.fire = function(target, type, properties) {
-		var evt = document.createEvent("HTMLEvents");
-
-		evt.initEvent(type, true, true );
-
-		for (var j in properties) {
-			evt[j] = properties[j];
-		}
-
-		target.dispatchEvent(evt);
-	};
 
 	$.regExpEscape = function (s) {
 		return s.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
