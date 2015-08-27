@@ -63,14 +63,36 @@
 
 		// Create necessary elements
 
-		this.container = $.create("div", {
+		this.searchContainer = $.create("section", {
 			className : "twitcher-search",
 			around : input
 		});
 
-		this.ul = $.create("ul", {
+		this.searchButton = $.create("button", {
+			className : "twitcher-submit",
+			type : "button",
+			innerHTML : "Search",
+			after : input
+		});
+
+		this.searchUList = $.create("ul", {
 			hidden : "",
-			inside : this.container
+			inside : this.searchContainer
+		});
+
+		this.resultContainer = $.create("section", {
+			className : "twitcher-result",
+			after : this.searchContainer
+		});
+		
+		this.resultContainerHead = $.create("div", {
+			className : "twitcher-result-head",
+			inside : this.resultContainer
+		});
+		
+		this.resultContainerBody = $.create("div", {
+			className : "twitcher-result-body",
+			after : this.resultContainerHead
 		});
 
 		this.status = $.create("span", {
@@ -78,7 +100,7 @@
 			role : "status",
 			"aria-live" : "assertive",
 			"aria-relevant" : "additions",
-			inside : this.container
+			inside : this.searchContainer
 		});
 
 		// Bind events
@@ -118,12 +140,13 @@
 			}
 		});
 
-		$.bind(document.getElementById('twitcher-submit'), {
+		$.bind(this.searchButton, {
 			"mousedown" : function() {
 				console.log('Submitted', self.input.value, JSON.stringify(self.bufferList));
-		}});
+			}
+		});
 
-		$.bind(this.ul, {
+		$.bind(this.searchUList, {
 			"mousedown" : function(evt) {
 				var li = evt.target;
 
@@ -137,7 +160,8 @@
 						self.select(li);
 					}
 				}
-		}});
+			}
+		});
 
 		this.bufferList = o.bufferList || {};
 
@@ -151,16 +175,16 @@
 		},
 
 		get opened() {
-			return this.ul && this.ul.getAttribute("hidden") == null;
+			return this.searchUList && this.searchUList.getAttribute("hidden") == null;
 		},
 
 		close : function() {
-			this.ul.setAttribute("hidden", "");
+			this.searchUList.setAttribute("hidden", "");
 			this.index = -1;
 		},
 
 		open : function() {
-			this.ul.removeAttribute("hidden");
+			this.searchUList.removeAttribute("hidden");
 
 			if (this.autoFirst && this.index === -1) {
 				this.goto(0);
@@ -168,20 +192,20 @@
 		},
 
 		next : function() {
-			var count = this.ul.children.length;
+			var count = this.searchUList.children.length;
 
 			this.goto(this.index < count - 1? this.index + 1 : -1);
 		},
 
 		previous : function() {
-			var count = this.ul.children.length;
+			var count = this.searchUList.children.length;
 
 			this.goto(this.selected? this.index - 1 : count - 1);
 		},
 
 		// Should not be used, highlights specific item without any checks!
 		goto : function(i) {
-			var lis = this.ul.children;
+			var lis = this.searchUList.children;
 
 			if (this.selected) {
 				lis[this.index].setAttribute("selected", "false");
@@ -196,7 +220,7 @@
 		},
 
 		select : function(selected) {
-			selected = selected || this.ul.children[this.index];
+			selected = selected || this.searchUList.children[this.index];
 
 			if (selected) {
 				var prevented;
@@ -204,7 +228,6 @@
 				if (!prevented) {
 					this.replace(selected.textContent);
 					this.close();
-					
 				}
 			}
 		},
@@ -219,7 +242,7 @@
 			    this.queried.push(value);
 			    this.post($.custParams, $.queryParams);
 			}
-			// Run evaluate as usual on the existing items
+			// Re-Evaluate the existing items
 			this.evaluateList();
 		},
 
@@ -230,7 +253,7 @@
 			if (value.length >= this.minChars && Object.keys(self.bufferList).length > 0) {
 				this.index = -1;
 				// Populate list with options that match
-				this.ul.innerHTML = "";
+				this.searchUList.innerHTML = "";
 
 				Object.keys(self.bufferList)
 					.filter(function(item) {
@@ -239,13 +262,13 @@
 					.sort(this.sort)
 					.every(function(text, i) {
 						var listElem = self.item(text, value);
-						self.ul.appendChild(listElem);
+						self.searchUList.appendChild(listElem);
 						//console.log(listElem);
 						listElem.appendChild(self.itemImg(text));
 						return i < self.maxItems - 1;
 					});
 
-				if (this.ul.children.length === 0) {
+				if (this.searchUList.children.length === 0) {
 					this.close();
 				} else {
 					this.open();
@@ -393,6 +416,10 @@
 				var ref = $(val);
 				ref.parentNode.insertBefore(element, ref);
 				element.appendChild(ref);
+			}
+			else if (i === "after") {
+				var ref = $(val);
+				ref.parentNode.insertBefore(element, ref.nextSibling);
 			}
 			else if (i in element) {
 				element[i] = val;
