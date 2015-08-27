@@ -14,52 +14,20 @@
 			},
 
 			method : 'GET',
-			url : 'https://api.twitch.tv/kraken/search/streams'
+			url : 'https://api.twitch.tv/kraken/search/games'
 
 		}
 
 		$.queryParams = {
-			q : 'batman',
-			limit : '5',
-			offset : '0' 
+			type : 'suggest',
+			live : 'true',
+			offset : '0',
+			limit : '5'
 		}
+		
 
 		document.addEventListener("DOMContentLoaded", function() {
-			var headers     = $.custParams.headers,
-	            headersKeys = Object.getOwnPropertyNames(headers),
-	            method      = $.custParams.method,
-	            url         = $.custParams.url,
-	            i;
-
-	        if (method.match(/^GET$/i)) {
-	        	url += "?";
-	        	for(var query in $.queryParams){
-	        		var param = query + "=" + $.queryParams[query]+"&";
-	        		url += param;
-	        	}
-	        }
-
-	        var request = new XMLHttpRequest();
-	        request.open(method, url, true);
-
-	        for (i = headersKeys.length - 1; i >= 0; i--) {
-	            request.setRequestHeader(headersKeys[i], headers[headersKeys[i]]);
-	        }
-
-	        request.onreadystatechange = function () {
-	            if (request.readyState == 4 && request.status == 200) {
-	                /*if (!custParams.post(result, request.response, custParams)) {
-	                    custParams.open(input, result);
-	                }*/
-	                console.log("got the result");
-	                console.log(request.response);
-	            }
-	        };
-
-	        request.send(url);
-
-	        //return console.log(request.response);
-     
+			
 		});
 	</script>
 </head>
@@ -69,7 +37,7 @@
 
 		<label>
 			Search Twitcher:<br/>
-			<input autofocus class="Twitcher" data-list="Ada, Java, JavaScript, Brainfuck, LOLCODE, Node.js, Ruby on Rails" />
+			<input autofocus class="Twitcher"/>
 			<button id="twitcher-submit" type="button">Search</button>
 		</label>
 

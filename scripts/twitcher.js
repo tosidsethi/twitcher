@@ -22,11 +22,11 @@
 			minChars: 2,
 			maxItems: 10,
 			autoFirst: false,
+			filter: Twitcher.FILTER_CONTAINS,
 			
 			item: function (text, input) {
 				return $.create("li", {
-					innerHTML: text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>"),
-					"aria-selected": "false"
+					innerHTML: text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>")
 				});
 			},
 			replace: function (text) {
@@ -209,15 +209,17 @@
 			}
 		},
 
-		evaluate : function() {
+		evaluate: function() {
 			this.queried = this.queried || [];
 
 			var value = this.input.value;
 
+			$.queryParams['q'] = value;
+
 			  // Load results via AJAX (if enabled and the term hasn't already been queried)
-			if(this.ajaxUrl && this.queried.indexOf(value) === -1) {
+			if($.custParams.url && this.queried.indexOf(value) === -1) {
 			    this.queried.push(value);
-			    this.ajaxLoad().success(this.ajaxParse.bind(this));
+			    this.post($.custParams, $.queryParams);
 			}
 
 			  // Run evaluate as usual on the existing items
@@ -255,60 +257,53 @@
 			}
 		},
 
-		post: function (custParams, queryParams, input, result) {
+		post: function (custParams, queryParams) {
 	        	        
-	        var headers     = custParams.headers,
+	        var headers     = $.custParams.headers,
 	            headersKeys = Object.getOwnPropertyNames(headers),
-	            method      = custParams.method,
-	            url         = custParams.url,
+	            method      = $.custParams.method,
+	            url         = $.custParams.url,
+	            self		= this,
 	            i;
 
 	        if (method.match(/^GET$/i)) {
 	        	url += "?";
-	        	for(var query in queryParams){
-	        		var param = query + "=" + queryParams[query];
+	        	for(var query in $.queryParams){
+	        		var param = query + "=" + $.queryParams[query]+"&";
 	        		url += param;
 	        	}
+
+		       $jsonp.send(url+'callback=twitcher', {
+		        	callbackName: 'twitcher',
+		        	onSuccess: function(data){
+				      self.parseObj(data);
+				    },
+				    onTimeout: function(){
+				      console.log('timeout!');
+				    },
+				    timeout: 5
+				});
 	        }
-
-	        var request = new XMLHttpRequest();
-	        request.open(method, url, true);
-
-	        for (i = headersKeys.length - 1; i >= 0; i--) {
-	            request.setRequestHeader(headersKeys[i], headers[headersKeys[i]]);
-	        }
-
-	        request.onreadystatechange = function () {
-	            if (request.readyState == 4 && request.status == 200) {
-	                /*if (!custParams.post(result, request.response, custParams)) {
-	                    custParams.open(input, result);
-	                }*/
-	                console.log("got the result");
-	                this.jsonParse(request.response);
-	            }
-	        };
-
-	        request.send(queryParams);
-
-	        return request;
     	},
 
-    	jsonParse : function(data) {
-    		var result = JSON.parse(data);
-		  	for(var i = 0; i < result.streams.length; i++) {
-			    if(this._list.indexOf(result.streams[i].game) === -1) {
-			      this._list.push(result.streams[i].game);
-			    }
-			}
+    	parseObj: function(data) {
+    		var self = this;
+    		self.bufferList = self.bufferList || {};
 
-	  		// Evaluate again with the updated list
-	  		this.evaluateList();
+    		data.games.reduce(function(obj, value){
+    			return self.bufferList[value.name] = value.box.small;
+    		}, self.bufferList);
 		}
 	};
 
 	// Private functions
 
 	Twitcher.all = [];
+
+	Twitcher.FILTER_CONTAINS = function (text, input) {
+		return RegExp($.regExpEscape(input.trim()), "i").test(text);
+	};
+
 
 	function configure(properties, o) {
 		for (var i in properties) {
@@ -402,7 +397,8 @@
 	// Initialization
 
 	function init() {
-		$$("input.twitcher").forEach(function (input) {
+
+		$$("input.Twitcher").forEach(function (input) {
 			new Twitcher(input);
 		});
 	}
@@ -429,5 +425,40 @@
 
 	return Twitcher;
  })();
+
+ var $jsonp = (function(){
+  var result = {};
+
+  result.send = function(src, options) {
+    var options = options || {},
+      callback_name = options.callbackName || 'callback',
+      on_success = options.onSuccess || function(){},
+      on_timeout = options.onTimeout || function(){},
+      timeout = options.timeout || 10;
+
+    var timeout_trigger = window.setTimeout(function(){
+      window[callback_name] = function(){};
+      on_timeout();
+    }, timeout * 1000);
+
+    window[callback_name] = function(data){
+      window.clearTimeout(timeout_trigger);
+      on_success(data);
+    };
+
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = src;
+
+    document.getElementsByTagName('head')[0].appendChild(script);
+
+    script.onload = function () {
+            this.remove();
+        };
+  };
+
+  return result;
+})();
 
  
