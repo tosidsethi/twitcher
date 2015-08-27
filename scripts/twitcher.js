@@ -113,7 +113,7 @@
  	Twitcher.prototype = {
 		set list(list) {
 			if (Array.isArray(list)) {
-				this._list = list;
+				this.bufferList = list;
 			}
 			else if (typeof list === "string" && list.indexOf(",") > -1) {
 					this._list = list.split(/\s*,\s*/);
@@ -129,7 +129,7 @@
 			}
 
 			if (document.activeElement === this.input) {
-				this.evaluate();
+				this.evaluateList();
 			}
 		},
 
@@ -210,32 +210,31 @@
 		},
 
 		evaluate: function() {
+
 			this.queried = this.queried || [];
-
 			var value = this.input.value;
-
 			$.queryParams['q'] = value;
 
-			  // Load results via AJAX (if enabled and the term hasn't already been queried)
+			// Make an XHR request (if the term hasn't already been queried)
 			if($.custParams.url && this.queried.indexOf(value) === -1) {
 			    this.queried.push(value);
 			    this.post($.custParams, $.queryParams);
 			}
-
-			  // Run evaluate as usual on the existing items
-			  this.evaluateList();
+			// Run evaluate as usual on the existing items
+			this.evaluateList();
 		},
 
 		evaluateList: function() {
+
 			var self = this;
 			var value = this.input.value;
 
-			if (value.length >= this.minChars && this._list.length > 0) {
+			if (value.length >= this.minChars && Object.keys(self.bufferList).length > 0) {
 				this.index = -1;
 				// Populate list with options that match
 				this.ul.innerHTML = "";
 
-				this._list
+				Object.keys(self.bufferList)
 					.filter(function(item) {
 						return self.filter(item, value);
 					})
@@ -266,6 +265,10 @@
 	            self		= this,
 	            i;
 
+    		if(!(Object.keys(this.bufferList).length == 0) && Object.keys(this.bufferList).length >= 250){
+    			this.bufferList = {};
+    		}
+
 	        if (method.match(/^GET$/i)) {
 	        	url += "?";
 	        	for(var query in $.queryParams){
@@ -287,12 +290,17 @@
     	},
 
     	parseObj: function(data) {
+
     		var self = this;
     		self.bufferList = self.bufferList || {};
-
-    		data.games.reduce(function(obj, value){
+    		
+    		if(data.hasOwnProperty('games')){
+    			data.games.reduce(function(obj, value){
     			return self.bufferList[value.name] = value.box.small;
-    		}, self.bufferList);
+    			}, self.bufferList);
+    		}
+    		
+    		this.evaluateList();
 		}
 	};
 
