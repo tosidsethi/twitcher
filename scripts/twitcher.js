@@ -7,7 +7,7 @@
  * (c) 2015, Sid Sethi
  */
 
- var Twitcher = (function(){
+ var Twitcher = (function() {
  	'use strict';
  	var Twitcher = function(input, o) {
 
@@ -23,60 +23,76 @@
 			maxItems: 6,
 			autoFirst: false,
 			filter: Twitcher.FILTER_CONTAINS,
-			
-			item: function (text, input) {
+			offSet: 0,
+			limit:5,
+
+			resultDiv : function(text) {
+				return $.create("div", {
+					id : text,
+					className : "twitcher-result-body-stream"
+				});
+			},
+			resultDivImg : function(imgSrc) {
+				return $.create("img", {
+					src : imgSrc,
+					className : "resultDivImg"
+				});
+			},
+			resultDivInfo : function() {
+				return $.create("div", {
+					className : "resultDivInfo"
+				});
+			},
+			item : function(text, input) {
 				return $.create("li", {
 					innerHTML: text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>"),
-					id:text});			
+					id:text
+				});			
 			},
-			itemImg: function (text) {
+			itemImg : function(text) {
 				return $.create("img", {
 					src : self.bufferList[text]
 				});
 			},
-			replace: function (text) {
+			replace : function(text) {
 				this.input.value = text;
 			}
 		}, o);
-
-		if(self.opened){
-			self.ul.li.img = $.create("img")
-		}
 
 		this.index = -1;
 
 		// Create necessary elements
 
 		this.container = $.create("div", {
-			className: "twitcher-search",
-			around: input
+			className : "twitcher-search",
+			around : input
 		});
 
 		this.ul = $.create("ul", {
-			hidden: "",
-			inside: this.container
+			hidden : "",
+			inside : this.container
 		});
 
 		this.status = $.create("span", {
-			className: "visually-hidden",
-			role: "status",
-			"aria-live": "assertive",
-			"aria-relevant": "additions",
-			inside: this.container
+			className : "visually-hidden",
+			role : "status",
+			"aria-live" : "assertive",
+			"aria-relevant" : "additions",
+			inside : this.container
 		});
 
 		// Bind events
 
 		$.bind(this.input, {
 
-			"input": function(){
+			"input" : function() {
 				setTimeout(self.evaluate.bind(self), 300);
 			},
-			"blur": function(){
+			"blur" : function() {
 				self.close.call(self);
-				console.log("los focus");
+				console.log("lost focus");
 			},
-			"keydown": function(evt) {
+			"keydown" : function(evt) {
 				var c = evt.keyCode;
 
 				// If the dropdown `ul` is in view, then act on keydown for the following keys:
@@ -102,23 +118,25 @@
 			}
 		});
 
-		$.bind(document.getElementById('twitcher-submit'), {"mousedown" : function(){
-			console.log('Submitted', self.input.value, JSON.stringify(self.bufferList));
+		$.bind(document.getElementById('twitcher-submit'), {
+			"mousedown" : function() {
+				console.log('Submitted', self.input.value, JSON.stringify(self.bufferList));
 		}});
 
-		$.bind(this.ul, {"mousedown": function(evt) {
-			var li = evt.target;
+		$.bind(this.ul, {
+			"mousedown" : function(evt) {
+				var li = evt.target;
 
-			if (li !== this) {
+				if (li !== this) {
 
-				while (li && !/li/i.test(li.nodeName)) {
-					li = li.parentNode;
+					while (li && !/li/i.test(li.nodeName)) {
+						li = li.parentNode;
+					}
+
+					if (li) {
+						self.select(li);
+					}
 				}
-
-				if (li) {
-					self.select(li);
-				}
-			};
 		}});
 
 		this.bufferList = o.bufferList || {};
@@ -136,12 +154,12 @@
 			return this.ul && this.ul.getAttribute("hidden") == null;
 		},
 
-		close: function () {
+		close : function() {
 			this.ul.setAttribute("hidden", "");
 			this.index = -1;
 		},
 
-		open: function () {
+		open : function() {
 			this.ul.removeAttribute("hidden");
 
 			if (this.autoFirst && this.index === -1) {
@@ -149,20 +167,20 @@
 			}
 		},
 
-		next: function () {
+		next : function() {
 			var count = this.ul.children.length;
 
 			this.goto(this.index < count - 1? this.index + 1 : -1);
 		},
 
-		previous: function () {
+		previous : function() {
 			var count = this.ul.children.length;
 
 			this.goto(this.selected? this.index - 1 : count - 1);
 		},
 
 		// Should not be used, highlights specific item without any checks!
-		goto: function (i) {
+		goto : function(i) {
 			var lis = this.ul.children;
 
 			if (this.selected) {
@@ -177,7 +195,7 @@
 			}
 		},
 
-		select: function (selected) {
+		select : function(selected) {
 			selected = selected || this.ul.children[this.index];
 
 			if (selected) {
@@ -191,8 +209,7 @@
 			}
 		},
 
-		evaluate: function() {
-
+		evaluate : function() {
 			this.queried = this.queried || [];
 			var value = this.input.value;
 			$.queryParams['q'] = value;
@@ -206,8 +223,7 @@
 			this.evaluateList();
 		},
 
-		evaluateList: function() {
-
+		evaluateList : function() {
 			var self = this;
 			var value = this.input.value;
 
@@ -240,9 +256,8 @@
 			}
 		},
 
-		post: function (custParams, queryParams) {
-	        	        
-	        var headers     = custParams.headers,
+		post : function(custParams, queryParams) {
+		    var headers     = custParams.headers,
 	            headersKeys = Object.getOwnPropertyNames(headers),
 	            method      = custParams.method,
 	            url         = custParams.url,
@@ -255,17 +270,17 @@
 
 	        if (method.match(/^GET$/i)) {
 	        	url += "?";
-	        	for(var query in $.queryParams){
+	        	for(var query in $.queryParams) {
 	        		var param = query + "=" + $.queryParams[query]+"&";
 	        		url += param;
 	        	}
 
 		       $jsonp.send(url+'callback=twitcher', {
 		        	callbackName: 'twitcher',
-		        	onSuccess: function(data){
+		        	onSuccess : function(data) {
 				      self.parseObj(data);
 				    },
-				    onTimeout: function(){
+				    onTimeout : function() {
 				      console.log('timeout!');
 				    },
 				    timeout: 5
@@ -273,14 +288,13 @@
 	        }
     	},
 
-    	parseObj: function(data) {
-
+    	parseObj : function(data) {
     		var self = this;
     		self.bufferList = self.bufferList || {};
     		
-    		if(data.hasOwnProperty('games')){
-    			data.games.reduce(function(obj, value){
-    			return self.bufferList[value.name] = value.box.small;
+    		if(data.hasOwnProperty('games')) {
+    			data.games.reduce(function(obj, value) {
+    				return self.bufferList[value.name] = value.box.small;
     			}, self.bufferList);
     		}
     		
@@ -289,7 +303,6 @@
 	};
 
 	// Private functions
-
 	Twitcher.all = [];
 
 	Twitcher.FILTER_CONTAINS = function (text, input) {
@@ -322,7 +335,6 @@
 	}
 
 	// Helpers
-
 	var slice = Array.prototype.slice;
 
 	function $(expr, con) {
@@ -333,7 +345,42 @@
 		return slice.call((con || document).querySelectorAll(expr));
 	}
 
-	$.create = function(tag, o) {
+	var $jsonp = (function() {
+		var result = {};
+
+	  	result.send = function(src, options) {
+	    	var options = options || {},
+	      	callback_name = options.callbackName || 'callback',
+	      	on_success = options.onSuccess || function(){},
+	      	on_timeout = options.onTimeout || function(){},
+	      	timeout = options.timeout || 10;
+
+	    	var timeout_trigger = window.setTimeout(function() {
+	      		window[callback_name] = function(){};
+	      		on_timeout();
+	    		}, timeout * 1000);
+
+	    	window[callback_name] = function(data) {
+	      		window.clearTimeout(timeout_trigger);
+	      		on_success(data);
+	    	};
+
+	    	var script = document.createElement('script');
+	    	script.type = 'text/javascript';
+	    	script.async = true;
+	    	script.src = src;
+
+	    	document.getElementsByTagName('head')[0].appendChild(script);
+
+	    	script.onload = function() {
+	            this.remove();
+	        }
+	  	}
+
+	  	return result;
+	})();
+
+ 	$.create = function(tag, o) {
 		var element = document.createElement(tag);
 
 		for (var i in o) {
@@ -376,9 +423,7 @@
 	}
 
 	// Initialization
-
 	function init() {
-
 		$$("input.Twitcher").forEach(function (input) {
 			new Twitcher(input);
 		});
@@ -407,38 +452,3 @@
 	return Twitcher;
  })();
 
-var $jsonp = (function(){
-	var result = {};
-
-  	result.send = function(src, options) {
-    	var options = options || {},
-      	callback_name = options.callbackName || 'callback',
-      	on_success = options.onSuccess || function(){},
-      	on_timeout = options.onTimeout || function(){},
-      	timeout = options.timeout || 10;
-
-    	var timeout_trigger = window.setTimeout(function(){
-      		window[callback_name] = function(){};
-      		on_timeout();
-    		}, timeout * 1000);
-
-    	window[callback_name] = function(data){
-      		window.clearTimeout(timeout_trigger);
-      		on_success(data);
-    	};
-
-    	var script = document.createElement('script');
-    	script.type = 'text/javascript';
-    	script.async = true;
-    	script.src = src;
-
-    	document.getElementsByTagName('head')[0].appendChild(script);
-
-    	script.onload = function () {
-            this.remove();
-        }
-  	}
-  	return result;
-})();
-
- 
