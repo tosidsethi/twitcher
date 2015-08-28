@@ -19,16 +19,16 @@
  		o = o || {};
 
  		configure.call(this, {
-			minChars: 2,
-			maxItems: 6,
-			autoFirst: false,
-			filter: Twitcher.FILTER_CONTAINS,
-			offSet: 0,
-			limit:5,
+			minChars : 2,
+			maxItems : 6,
+			autoFirst : false,
+			filter : Twitcher.FILTER_CONTAINS,
+			offSet : 0,
+			limit : 5,
 
-			resultDiv : function(text) {
+			resultDiv : function(idd) {
 				return $.create("div", {
-					id : text,
+					id : idd,
 					className : "twitcher-result-body-stream"
 				});
 			},
@@ -41,6 +41,25 @@
 			resultDivInfo : function() {
 				return $.create("div", {
 					className : "resultDivInfo"
+				});
+			},
+			resultDivDisplayName : function(displayName, channelSrc) {
+				return $.create("a", {
+					href : channelSrc,
+					className : "resultDivDisplayName",
+					innerHTML : displayName
+				});
+			},
+			resultDivGame : function(game, views) {
+				return $.create("span", {
+					className : "resultDivGame",
+					innerHTML : game + " - " + views
+				});
+			},
+			resultDivDescription : function(description) {
+				return $.create("p", {
+					className : "resultDivDescription",
+					innerHTML : description
 				});
 			},
 			item : function(text, input) {
@@ -61,7 +80,7 @@
 
 		this.index = -1;
 
-		// Create necessary elements
+		// Create Twitcher skeleton
 
 		this.searchContainer = $.create("section", {
 			className : "twitcher-search",
@@ -70,12 +89,13 @@
 
 		this.searchButton = $.create("button", {
 			className : "twitcher-submit",
-			type : "button",
+			"type" : "button",
 			innerHTML : "Search",
 			after : input
 		});
 
 		this.searchUList = $.create("ul", {
+			className : "twitcher-search-list",
 			hidden : "",
 			inside : this.searchContainer
 		});
@@ -95,6 +115,20 @@
 			after : this.resultContainerHead
 		});
 
+		this.resultContainerHeadTotal = $.create("span", {
+			className : "twitcher-search-total",
+			innerHTML : "Total : ",
+			style : "visibility : hidden",
+			inside : this.resultContainerHead
+		});
+
+		this.resultContainerHeadPaginator = $.create("span", {
+			className : "twitcher-search-paginator",
+			innerHTML : "0/20",
+			style : "visibility : hidden",
+			after : this.resultContainerHeadTotal
+		});
+
 		this.status = $.create("span", {
 			className : "visually-hidden",
 			role : "status",
@@ -108,7 +142,7 @@
 		$.bind(this.input, {
 
 			"input" : function() {
-				setTimeout(self.evaluate.bind(self), 300);
+				setTimeout(self.evaluate.bind(self, "game"), 300);
 			},
 			"blur" : function() {
 				self.close.call(self);
@@ -120,14 +154,16 @@
 				// If the dropdown `ul` is in view, then act on keydown for the following keys:
 				// Enter / Esc / Up / Down
 				if(self.opened) {
-					if (c === 13 && self.selected) { // Enter
+					if (c === 13 && self.selected) { // Enter on a choice
 						console.log('Pressed Return');
 						evt.preventDefault();
 						self.select();
+						self.evaluate("stream");
 					}
-					else if(c==13 && !self.selected) {
+					else if(c==13 && !self.selected) { // Enter without choosing
 						console.log('Pressed Return');
 						self.close();
+						self.evaluate("stream");
 					}
 					else if (c === 27) { // Esc
 						self.close();
@@ -142,7 +178,8 @@
 
 		$.bind(this.searchButton, {
 			"mousedown" : function() {
-				console.log('Submitted', self.input.value, JSON.stringify(self.bufferList));
+				console.log('Submitted', self.input.value);
+				self.evaluate("stream");
 			}
 		});
 
@@ -158,12 +195,14 @@
 
 					if (li) {
 						self.select(li);
+						self.evaluate("stream");
 					}
 				}
 			}
 		});
 
 		this.bufferList = o.bufferList || {};
+		this.streamList = {};
 
 		Twitcher.all.push(this);
  	} 
@@ -179,8 +218,10 @@
 		},
 
 		close : function() {
-			this.searchUList.setAttribute("hidden", "");
-			this.index = -1;
+			if(this.opened){
+				this.searchUList.setAttribute("hidden", "");
+				this.index = -1;
+			}
 		},
 
 		open : function() {
@@ -232,18 +273,27 @@
 			}
 		},
 
-		evaluate : function() {
+		evaluate : function(type) {
 			this.queried = this.queried || [];
 			var value = this.input.value;
-			$.queryParams['q'] = value;
+			$.gameParams.queryParams['q'] = value;
+			$.streamParams.queryParams['q'] = value;
 
-			// Make an XHR request (if the term hasn't already been queried)
-			if($.custParams.url && this.queried.indexOf(value) === -1) {
-			    this.queried.push(value);
-			    this.post($.custParams, $.queryParams);
+			if(type === "game") {
+				if(this.queried.indexOf(value) === -1) {
+					this.queried.push(value);
+					// Make an XHR request (if the term hasn't already been queried)
+					this.post($.gameParams, type);
+				}
+				// Re-Evaluate the existing items
+				this.evaluateList();
+			} 
+			if(type === "stream") {
+				// Make an XHR request to stream
+				this.post($.streamParams, type);
+				// Re-Evaluate the result page
+				this.evaluateResult();
 			}
-			// Re-Evaluate the existing items
-			this.evaluateList();
 		},
 
 		evaluateList : function() {
@@ -279,7 +329,36 @@
 			}
 		},
 
-		post : function(custParams, queryParams) {
+		evaluateResult : function() {
+			var self = this;
+			var value = this.input.value;
+
+			if (Object.keys(self.streamList).length > 0) {
+				this.resultContainerBody.innerHTML = "";
+
+				Object.keys(self.streamList.channel)
+					.every(function(id, index) {
+						var resultObj = self.streamList.channel[id];
+						var resultDiv = self.resultDiv(id);
+						var resultDivImg = self.resultDivImg(resultObj.imgSrc);
+						var resultDivInfo = self.resultDivInfo();
+						var resultDivDisplayName = self.resultDivDisplayName(resultObj.displayName, resultObj.channelSrc);
+						var resultDivGame = self.resultDivGame(resultObj.game, resultObj.views);
+						var resultDivDescription = self.resultDivDescription(resultObj.description);
+
+						resultDiv.appendChild(resultDivImg);
+						resultDivImg.parentNode.insertBefore(resultDivInfo, resultDivImg.nextSibling);
+						resultDivInfo.appendChild(resultDivDisplayName);
+						resultDivDisplayName.parentNode.insertBefore(resultDivGame, resultDivDisplayName.nextSibling);
+						resultDivGame.parentNode.insertBefore(resultDivDescription, resultDivGame.nextSibling);
+
+						self.resultContainerBody.appendChild(resultDiv);
+						return index < self.limit - 1;
+					});
+			}
+		},
+
+		post : function(custParams, type) {
 		    var headers     = custParams.headers,
 	            headersKeys = Object.getOwnPropertyNames(headers),
 	            method      = custParams.method,
@@ -293,21 +372,35 @@
 
 	        if (method.match(/^GET$/i)) {
 	        	url += "?";
-	        	for(var query in $.queryParams) {
-	        		var param = query + "=" + $.queryParams[query]+"&";
+	        	for(var query in custParams.queryParams) {
+	        		var param = query + "=" + custParams.queryParams[query]+"&";
 	        		url += param;
 	        	}
 
-		       $jsonp.send(url+'callback=twitcher', {
-		        	callbackName: 'twitcher',
-		        	onSuccess : function(data) {
-				      self.parseObj(data);
-				    },
-				    onTimeout : function() {
-				      console.log('timeout!');
-				    },
-				    timeout: 5
-				});
+	        	if(type === 'game') {
+	        		$jsonp.send(url+'callback=twitcher', {
+			        	callbackName: 'twitcher',
+			        	onSuccess : function(data) {
+					      self.parseObj(data);
+					    },
+					    onTimeout : function() {
+					      console.log('timeout!');
+					    },
+					    timeout: 5
+					});
+	        	}
+		       	else if(type === 'stream') {
+		       		$jsonp.send(url+'callback=twitcher', {
+			        	callbackName: 'twitcher',
+			        	onSuccess : function(data) {
+					      self.parseResult(data);
+					    },
+					    onTimeout : function() {
+					      console.log('timeout!');
+					    },
+					    timeout: 5
+					});
+		       	}
 	        }
     	},
 
@@ -315,23 +408,53 @@
     		var self = this;
     		self.bufferList = self.bufferList || {};
     		
-    		if(data.hasOwnProperty('games')) {
+    		if(data.hasOwnProperty('games') && data.games.length>0) {
     			data.games.reduce(function(obj, value) {
-    				return self.bufferList[value.name] = value.box.small;
+    				obj[value.name] = value.box.small;
+    				return obj;
     			}, self.bufferList);
     		}
     		
     		this.evaluateList();
+		},
+
+		parseResult : function(data) {
+			var self = this;
+			self.streamList = {};
+			//console.log("parsing result");
+			//console.log(data);
+			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>0) {
+				console.log("inside data");
+				self.streamList.total = data["_total"];
+				self.streamList.offSet = self.offSet;
+				self.streamList.channel = {};
+
+				data.streams.reduce(function(obj, value) {
+					obj.channel[value["_id"]] = {};
+					obj.channel[value["_id"]].displayName = value.channel["display_name"];
+					obj.channel[value["_id"]].imgSrc = value.preview.medium;
+					obj.channel[value["_id"]].channelSrc = value.channel.url;
+					obj.channel[value["_id"]].game = value.channel.game;
+					obj.channel[value["_id"]].views = value.channel.views;
+					obj.channel[value["_id"]].description = value.channel.status;
+
+					return obj;
+				}, self.streamList);
+			}
+
+			this.evaluateResult();
 		}
 	};
 
-	// Private functions
+	// Static methods/properties
+	
 	Twitcher.all = [];
 
 	Twitcher.FILTER_CONTAINS = function (text, input) {
 		return RegExp($.regExpEscape(input.trim()), "i").test(text);
 	};
 
+	// Private methods
 
 	function configure(properties, o) {
 		for (var i in properties) {
@@ -357,7 +480,8 @@
 		}
 	}
 
-	// Helpers
+	// Helper functions
+	
 	var slice = Array.prototype.slice;
 
 	function $(expr, con) {
