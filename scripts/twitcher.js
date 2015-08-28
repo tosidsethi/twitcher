@@ -389,8 +389,13 @@
 				this.resultContainerBody.innerHTML = "";
 				this.resultContainerHeadTotal.innerHTML = "Total Results : " + self.streamList.total;
 				this.currentPageSpan.setAttribute("style", "display : inline");
-				this.currentPageSpan.innerHTML = this.currentPage + "/" + this.totalPages;
-
+				if(this.totalPages > 1) {
+					this.currentPageSpan.innerHTML = this.currentPage + "/" + this.totalPages;	
+				} 
+				else {
+					this.currentPageSpan.setAttribute("style", "display : none");
+				}
+				
 				if(self.offSet==0){
 					self.prevButton.setAttribute("style", "display : none");
 				}
@@ -437,6 +442,7 @@
 	            method      = custParams.method,
 	            url         = custParams.url,
 	            self		= this,
+	            offSet 		= "offset=" + this.offSet,
 	            i;
 
     		if(Object.keys(this.bufferList).length > 0 && Object.keys(this.bufferList).length >= 250){
@@ -449,6 +455,8 @@
 	        		var param = query + "=" + custParams.queryParams[query]+"&";
 	        		url += param;
 	        	}
+
+	        	url += offSet + "&";
 
 	        	if(type === 'game') {
 	        		$jsonp.send(url+'callback=twitcher', {
@@ -514,7 +522,11 @@
 			if(data.hasOwnProperty('streams') && parseInt(data["_total"])!=null) {
 				self.streamList.total = data["_total"];
 				self.streamList.offSet = self.offSet;
-				self.totalPages = Math.ceil(self.streamList.total/self.limit);
+				if(self.streamList.total > 0) {
+					self.totalPages = Math.ceil(self.streamList.total/self.limit);	
+				}
+				else self.totalPages = 0;
+				
 				self.currentPage = Math.abs((self.limit + self.offSet)/self.limit);
 				self.streamList.channel = {};
 				
