@@ -8,7 +8,6 @@
  */
 
  var Twitcher = (function() {
- 	'use strict';
  	var Twitcher = function(input, o) {
 
  		var self = this;
@@ -20,7 +19,7 @@
 
  		configure.call(this, {
 			minChars : 2,
-			maxItems : 6,
+			maxItems : 4,
 			autoFirst : false,
 			filter : Twitcher.FILTER_CONTAINS,
 			offSet : 0,
@@ -64,7 +63,7 @@
 			},
 			item : function(text, input) {
 				return $.create("li", {
-					innerHTML: text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>"),
+					innerHTML: "<span>" + text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>") + "</span>",
 					id:text
 				});			
 			},
@@ -132,8 +131,6 @@
 		this.status = $.create("span", {
 			className : "visually-hidden",
 			role : "status",
-			"aria-live" : "assertive",
-			"aria-relevant" : "additions",
 			inside : this.searchContainer
 		});
 
@@ -146,22 +143,26 @@
 			},
 			"blur" : function() {
 				self.close.call(self);
-				console.log("lost focus");
 			},
 			"keydown" : function(evt) {
 				var c = evt.keyCode;
 
+				if (document.activeElement === self.input) {
+					if(c === 13) {
+						evt.preventDefault();
+						self.evaluate("stream");
+					}
+				}
 				// If the dropdown `ul` is in view, then act on keydown for the following keys:
 				// Enter / Esc / Up / Down
 				if(self.opened) {
 					if (c === 13 && self.selected) { // Enter on a choice
-						console.log('Pressed Return');
+						console.log('Pressed Return on selected item');
 						evt.preventDefault();
 						self.select();
-						self.evaluate("stream");
 					}
 					else if(c==13 && !self.selected) { // Enter without choosing
-						console.log('Pressed Return');
+						console.log('Pressed Return without selection');
 						self.close();
 						self.evaluate("stream");
 					}
@@ -195,7 +196,7 @@
 
 					if (li) {
 						self.select(li);
-						self.evaluate("stream");
+						self.evaluate.bind(self, "stream");
 					}
 				}
 			}
@@ -250,6 +251,7 @@
 
 			if (this.selected) {
 				lis[this.index].setAttribute("selected", "false");
+				lis[this.index].removeAttribute("style");
 			}
 
 			this.index = i;
@@ -257,6 +259,7 @@
 			if (i > -1 && lis.length > 0) {
 				lis[i].setAttribute("selected", "true");
 				this.status.textContent = lis[i].textContent;
+				lis[i].setAttribute("style", "background-color : #9B87FF")
 			}
 		},
 
@@ -271,6 +274,7 @@
 					this.close();
 				}
 			}
+			setTimeout(this.evaluate.bind(this, "stream"), 200);
 		},
 
 		evaluate : function(type) {
@@ -288,7 +292,7 @@
 				// Re-Evaluate the existing items
 				this.evaluateList();
 			} 
-			if(type === "stream") {
+			else if(type === "stream") {
 				// Make an XHR request to stream
 				this.post($.streamParams, type);
 				// Re-Evaluate the result page
@@ -314,7 +318,8 @@
 						var listElem = self.item(text, value);
 						self.searchUList.appendChild(listElem);
 						//console.log(listElem);
-						listElem.appendChild(self.itemImg(text));
+						listElem.firstChild.parentNode.insertBefore(self.itemImg(text), listElem.firstChild);
+						//listElem.appendChild(self.itemImg(text));
 						return i < self.maxItems - 1;
 					});
 
@@ -390,6 +395,7 @@
 					});
 	        	}
 		       	else if(type === 'stream') {
+		       		/*self.streamList = {};*/
 		       		$jsonp.send(url+'callback=twitcher', {
 			        	callbackName: 'twitcher',
 			        	onSuccess : function(data) {
@@ -424,7 +430,7 @@
 			//console.log("parsing result");
 			//console.log(data);
 			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>0) {
-				console.log("inside data");
+				//console.log("inside data");
 				self.streamList.total = data["_total"];
 				self.streamList.offSet = self.offSet;
 				self.streamList.channel = {};
