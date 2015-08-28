@@ -17,7 +17,7 @@
 	font-family: arial;
 	font-size: 31px;
 	font-weight: bold;
-	margin-left: 50px;
+	margin-left: 150px;
 	letter-spacing: 2px;
 }
 
@@ -25,7 +25,7 @@
 	background-color: #6441a5;
 	height: 50px;
 	left: 0;
-	padding-left: 50px;
+	padding-left: 150px;
 	position: fixed;
 	top: 80px;
 	width: 100%;
@@ -34,7 +34,7 @@
 
 .twitcher-search-list {
 	height: auto;
-	left: 20px;
+	left: 120px;
 	list-style-type: none;
 	position: absolute;
 	top: 25px;
@@ -52,11 +52,52 @@
 	margin-bottom: 3px;
 	background-color: rgba(255,255,255,.93);
 	box-shadow: 0 0 0.3em #333;
+	font-family: 'arial';
+	color: #6441a5;
+	font-weight: bold;
+}
+
+.twitcher-search-list mark {
+	color: #000;
+	background:none;
 }
 
 .twitcher-search-list li:hover {
 	cursor: pointer;
 	background-color: #9B87FF;	
+}
+
+.twitcher-search-paginator {
+	float: right;
+	margin-right: 100px;
+	padding: 10px;
+	font-family: "calibri",arial;
+}
+
+.current-page {
+	font-weight: bold;
+	color: #000;
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
+.prev-button, .next-button {
+	color: #6441a5;
+	font-weight: bold;
+}
+
+.prev-button:hover, .next-button:hover {
+	color: #9B87FF;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.twitcher-search-total {
+	float: left;
+	margin-left: 50px;
+	padding: 10px;
+	font-family: "calibri",arial;
+	font-weight: bold;
 }
 
 .twitcher-search-list li span {
@@ -77,8 +118,71 @@
 
 .twitcher-result {
 	position: relative;
+	top: 170px;
+}
+
+.twitcher-result-head {
+	background: #EFE none repeat scroll 0 0;
+	display: block;
+	height: 40px;
+	left: 0;
+	margin: 20px auto auto;
+	position: fixed;
 	top: 110px;
-	z-index: -30;
+	width: 100%;
+	z-index: 9;
+	box-shadow: 0 0 0.3em #333;
+}
+
+.twitcher-result-body {
+	width: 70%;
+	margin : auto;
+}
+
+.twitcher-result-body-stream {
+	display: block;
+	height: 180px;
+	width: 100%;
+	margin-bottom: 5px;
+}
+
+.resultDivInfo {
+	display: block;
+	float: left;
+	height: 100%;
+	width: 70%;
+	margin-left: 5px;
+}
+
+.resultDivImg {
+	float: left;
+}
+.resultDivImgPlaceholder {
+	width: 320px;
+	height: 180px;
+	float: left;
+	display: block;
+}
+
+.resultDivDisplayName {
+	display: block;
+	font-family: "arial";
+	font-size: 25px;
+	text-decoration: none;
+	color: #6441a5;
+}
+
+.resultDivDisplayName:hover {
+	color: #9B87FF;
+}
+
+.resultDivGame {
+	border-bottom: 1px solid #ddd;
+	display: block;
+	font-family: "calibri",arial;
+	font-size: 15px;
+	font-weight: bold;
+	margin-top: 5px;
 }
 
 .Twitcher {
