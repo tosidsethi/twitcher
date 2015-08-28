@@ -19,11 +19,13 @@
 
  		configure.call(this, {
 			minChars : 2,
-			maxItems : 4,
+			maxItems : 5,
 			autoFirst : false,
 			filter : Twitcher.FILTER_CONTAINS,
 			offSet : 0,
 			limit : 5,
+			totalPages : null,
+			currentPage : null,
 
 			resultDiv : function(idd) {
 				return $.create("div", {
@@ -35,6 +37,11 @@
 				return $.create("img", {
 					src : imgSrc,
 					className : "resultDivImg"
+				});
+			},
+			resultDivImgPlaceholder : function() {
+				return $.create("div", {
+					className : "resultDivImgPlaceholder",
 				});
 			},
 			resultDivInfo : function() {
@@ -49,10 +56,10 @@
 					innerHTML : displayName
 				});
 			},
-			resultDivGame : function(game, views) {
+			resultDivGame : function(game, viewers) {
 				return $.create("span", {
 					className : "resultDivGame",
-					innerHTML : game + " - " + views
+					innerHTML : game + " - " + viewers + " viewers"
 				});
 			},
 			resultDivDescription : function(description) {
@@ -116,18 +123,29 @@
 
 		this.resultContainerHeadTotal = $.create("span", {
 			className : "twitcher-search-total",
-			innerHTML : "Total : ",
-			style : "visibility : hidden",
 			inside : this.resultContainerHead
 		});
 
 		this.resultContainerHeadPaginator = $.create("span", {
 			className : "twitcher-search-paginator",
-			innerHTML : "0/20",
-			style : "visibility : hidden",
 			after : this.resultContainerHeadTotal
 		});
 
+		this.prevButton = $.create("span", {
+			className : "prev-button",
+			inside : this.resultContainerHeadPaginator
+		});
+
+		this.currentPageSpan = $.create("span", {
+			className : "current-page",
+			after : this.prevButton
+		});
+		
+		this.nextButton = $.create("span", {
+			className : "next-button",
+			after : this.currentPageSpan
+		});
+		
 		this.status = $.create("span", {
 			className : "visually-hidden",
 			role : "status",
@@ -177,6 +195,30 @@
 			}
 		});
 
+		$.bind(this.nextButton, {
+			mousedown : function() {
+				if(self.currentPage < self.totalPages) {
+					if(self.streamList.hasOwnProperty("next")){
+						self.evaluate("stream", self.streamList["next"]);
+						self.offSet += self.limit;
+						self.currentPage = Math.abs((self.limit + self.offSet)/self.limit);
+					}
+				}
+			}
+		});
+
+		$.bind(this.prevButton, {
+			mousedown : function() {
+				if(self.offSet > 0) {
+					if(self.streamList.hasOwnProperty("prev")){
+						self.evaluate("stream", self.streamList["prev"]);
+						self.offSet -= self.limit;
+						self.currentPage = Math.abs((self.offSet-self.limit)/self.limit);
+					}	
+				} 
+			}
+		});
+
 		$.bind(this.searchButton, {
 			"mousedown" : function() {
 				console.log('Submitted', self.input.value);
@@ -202,6 +244,7 @@
 			}
 		});
 
+				
 		this.bufferList = o.bufferList || {};
 		this.streamList = {};
 
@@ -277,7 +320,7 @@
 			setTimeout(this.evaluate.bind(this, "stream"), 200);
 		},
 
-		evaluate : function(type) {
+		evaluate : function(type, goToPage) {
 			this.queried = this.queried || [];
 			var value = this.input.value;
 			$.gameParams.queryParams['q'] = value;
@@ -293,8 +336,14 @@
 				this.evaluateList();
 			} 
 			else if(type === "stream") {
-				// Make an XHR request to stream
-				this.post($.streamParams, type);
+				if(goToPage) {
+					this.post($.streamParams, type, goToPage);
+				} 
+				else {
+					// Make an XHR request to stream
+					this.offSet = 0;
+					this.post($.streamParams, type);
+				}
 				// Re-Evaluate the result page
 				this.evaluateResult();
 			}
@@ -340,30 +389,50 @@
 
 			if (Object.keys(self.streamList).length > 0) {
 				this.resultContainerBody.innerHTML = "";
+				this.resultContainerHeadTotal.innerHTML = "Total : " + self.streamList.total;
+				this.currentPageSpan.innerHTML = this.currentPage + "/" + this.totalPages;
+
+				if(self.offSet==0){
+					self.prevButton.setAttribute("style", "display : none");
+				}
+				else {
+					self.prevButton.setAttribute("style", "display : inline");
+					self.prevButton.innerHTML = "Prev";
+				}
+
+				if(self.currentPage == self.totalPages){
+					self.nextButton.setAttribute("style", "display : none");
+				}
+				else {
+					self.nextButton.setAttribute("style", "display : inline");
+					self.nextButton.innerHTML = "Next";
+				}
 
 				Object.keys(self.streamList.channel)
 					.every(function(id, index) {
 						var resultObj = self.streamList.channel[id];
 						var resultDiv = self.resultDiv(id);
+						var resultDivImgPlaceholder = self.resultDivImgPlaceholder();
 						var resultDivImg = self.resultDivImg(resultObj.imgSrc);
 						var resultDivInfo = self.resultDivInfo();
 						var resultDivDisplayName = self.resultDivDisplayName(resultObj.displayName, resultObj.channelSrc);
-						var resultDivGame = self.resultDivGame(resultObj.game, resultObj.views);
+						var resultDivGame = self.resultDivGame(resultObj.game, resultObj.viewers);
 						var resultDivDescription = self.resultDivDescription(resultObj.description);
 
-						resultDiv.appendChild(resultDivImg);
-						resultDivImg.parentNode.insertBefore(resultDivInfo, resultDivImg.nextSibling);
+						resultDiv.appendChild(resultDivImgPlaceholder);
+						resultDivImgPlaceholder.parentNode.insertBefore(resultDivInfo, resultDivImgPlaceholder.nextSibling);
 						resultDivInfo.appendChild(resultDivDisplayName);
 						resultDivDisplayName.parentNode.insertBefore(resultDivGame, resultDivDisplayName.nextSibling);
 						resultDivGame.parentNode.insertBefore(resultDivDescription, resultDivGame.nextSibling);
 
 						self.resultContainerBody.appendChild(resultDiv);
+						resultDivImgPlaceholder.appendChild(resultDivImg);
 						return index < self.limit - 1;
 					});
 			}
 		},
 
-		post : function(custParams, type) {
+		post : function(custParams, type, goToPage) {
 		    var headers     = custParams.headers,
 	            headersKeys = Object.getOwnPropertyNames(headers),
 	            method      = custParams.method,
@@ -371,7 +440,7 @@
 	            self		= this,
 	            i;
 
-    		if(!(Object.keys(this.bufferList).length == 0) && Object.keys(this.bufferList).length >= 250){
+    		if(Object.keys(this.bufferList).length > 0 && Object.keys(this.bufferList).length >= 250){
     			this.bufferList = {};
     		}
 
@@ -395,17 +464,32 @@
 					});
 	        	}
 		       	else if(type === 'stream') {
-		       		/*self.streamList = {};*/
-		       		$jsonp.send(url+'callback=twitcher', {
-			        	callbackName: 'twitcher',
-			        	onSuccess : function(data) {
-					      self.parseResult(data);
-					    },
-					    onTimeout : function() {
-					      console.log('timeout!');
-					    },
-					    timeout: 5
-					});
+		       		self.streamList = {};
+
+		       		if(goToPage){
+		       			$jsonp.send(goToPage+"&"+'callback=twitcher', {
+				        	callbackName: 'twitcher',
+				        	onSuccess : function(data) {
+						      self.parseResult(data);
+						    },
+						    onTimeout : function() {
+						      console.log('timeout!');
+						    },
+						    timeout: 5
+						});
+		       		}
+		       		else {
+		       			$jsonp.send(url +'callback=twitcher', {
+				        	callbackName: 'twitcher',
+				        	onSuccess : function(data) {
+						      self.parseResult(data);
+						    },
+						    onTimeout : function() {
+						      console.log('timeout!');
+						    },
+						    timeout: 5
+						});
+		       		}
 		       	}
 	        }
     	},
@@ -427,22 +511,42 @@
 		parseResult : function(data) {
 			var self = this;
 			self.streamList = {};
-			//console.log("parsing result");
-			//console.log(data);
+			
 			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>0) {
-				//console.log("inside data");
 				self.streamList.total = data["_total"];
 				self.streamList.offSet = self.offSet;
+				self.totalPages = Math.ceil(self.streamList.total/self.limit);
+				self.currentPage = Math.abs((self.limit + self.offSet)/self.limit);
 				self.streamList.channel = {};
+				
+				if(data["_links"].hasOwnProperty("next")) {
+					self.streamList.next = data["_links"].next;
+				}
+
+				if(data["_links"].hasOwnProperty("prev")) {
+					self.streamList.prev = data["_links"].prev;
+				}
+
 
 				data.streams.reduce(function(obj, value) {
+					var descString = "";
 					obj.channel[value["_id"]] = {};
 					obj.channel[value["_id"]].displayName = value.channel["display_name"];
 					obj.channel[value["_id"]].imgSrc = value.preview.medium;
 					obj.channel[value["_id"]].channelSrc = value.channel.url;
-					obj.channel[value["_id"]].game = value.channel.game;
-					obj.channel[value["_id"]].views = value.channel.views;
-					obj.channel[value["_id"]].description = value.channel.status;
+					
+					if(value.channel.game == null){
+						obj.channel[value["_id"]].game = "Name of Game not present";	
+					} 
+					else obj.channel[value["_id"]].game = value.channel.game;
+					
+					obj.channel[value["_id"]].viewers = value.viewers;
+					
+					if(value.channel.length > 500){
+						descString = value.channel.substring(0,500) + "...";
+						obj.channel[value["_id"]].description = descString;	
+					}
+					else obj.channel[value["_id"]].description = value.channel.status;
 
 					return obj;
 				}, self.streamList);
