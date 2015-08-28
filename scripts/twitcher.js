@@ -179,7 +179,7 @@
 						evt.preventDefault();
 						self.select();
 					}
-					else if(c==13 && !self.selected) { // Enter without choosing
+					else if(c==13 && !self.selected && self.input.value!=null) { // Enter without choosing
 						console.log('Pressed Return without selection');
 						self.close();
 						self.evaluate("stream");
