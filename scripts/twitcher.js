@@ -389,7 +389,7 @@
 				this.resultContainerBody.innerHTML = "";
 				this.resultContainerHeadTotal.innerHTML = "Total Results : " + self.streamList.total;
 				this.currentPageSpan.setAttribute("style", "display : inline");
-				if(this.totalPages > 1) {
+				if(this.totalPages >= 1) {
 					this.currentPageSpan.innerHTML = this.currentPage + "/" + this.totalPages;	
 				} 
 				else {
@@ -404,7 +404,7 @@
 					self.prevButton.innerHTML = "Prev";
 				}
 
-				if(self.currentPage == self.totalPages){
+				if(self.currentPage == self.totalPages && self.totalPages > 0){
 					self.nextButton.setAttribute("style", "display : none");
 				}
 				else {
@@ -519,7 +519,7 @@
 			var self = this;
 			self.streamList = {};
 			
-			if(data.hasOwnProperty('streams') && parseInt(data["_total"])!=null) {
+			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>=0) {
 				self.streamList.total = data["_total"];
 				self.streamList.offSet = self.offSet;
 				if(self.streamList.total > 0) {
