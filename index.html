@@ -8,21 +8,26 @@
 		$ = Twitcher.$;
 		$$ = Twitcher.$$;
 
-		$.custParams = {
+		$.gameParams = {
 			headers : {
 				'Accept' : 'application/vnd.twitchtv.v3+json'
 			},
-
 			method : 'GET',
-			url : 'https://api.twitch.tv/kraken/search/games'
-
+			url : 'https://api.twitch.tv/kraken/search/games',
+			queryParams : {
+				type : 'suggest',
+				live : 'true'
+			}
 		}
 
-		$.queryParams = {
-			type : 'suggest',
-			live : 'true',
+		$.streamParams = {
+			headers : {
+				'Accept' : 'application/vnd.twitchtv.v3+json'
+			},
+			method : 'GET',
+			url : 'https://api.twitch.tv/kraken/search/streams',
+			queryParams : {}
 		}
-		
 
 		document.addEventListener("DOMContentLoaded", function() {
 			
