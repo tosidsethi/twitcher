@@ -389,7 +389,7 @@
 
 			if (Object.keys(self.streamList).length > 0) {
 				this.resultContainerBody.innerHTML = "";
-				this.resultContainerHeadTotal.innerHTML = "Total : " + self.streamList.total;
+				this.resultContainerHeadTotal.innerHTML = "Total Results : " + self.streamList.total;
 				this.currentPageSpan.innerHTML = this.currentPage + "/" + this.totalPages;
 
 				if(self.offSet==0){
