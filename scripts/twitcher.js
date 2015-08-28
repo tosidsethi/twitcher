@@ -179,7 +179,7 @@
 						evt.preventDefault();
 						self.select();
 					}
-					else if(c==13 && !self.selected && self.input.value!=null) { // Enter without choosing
+					else if(c==13 && !self.selected) { // Enter without choosing
 						console.log('Pressed Return without selection');
 						self.close();
 						self.evaluate("stream");
@@ -366,9 +366,7 @@
 					.every(function(text, i) {
 						var listElem = self.item(text, value);
 						self.searchUList.appendChild(listElem);
-						//console.log(listElem);
 						listElem.firstChild.parentNode.insertBefore(self.itemImg(text), listElem.firstChild);
-						//listElem.appendChild(self.itemImg(text));
 						return i < self.maxItems - 1;
 					});
 
@@ -390,6 +388,7 @@
 			if (Object.keys(self.streamList).length > 0) {
 				this.resultContainerBody.innerHTML = "";
 				this.resultContainerHeadTotal.innerHTML = "Total Results : " + self.streamList.total;
+				this.currentPageSpan.setAttribute("style", "display : inline");
 				this.currentPageSpan.innerHTML = this.currentPage + "/" + this.totalPages;
 
 				if(self.offSet==0){
@@ -512,7 +511,7 @@
 			var self = this;
 			self.streamList = {};
 			
-			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>0) {
+			if(data.hasOwnProperty('streams') && parseInt(data["_total"])!=null) {
 				self.streamList.total = data["_total"];
 				self.streamList.offSet = self.offSet;
 				self.totalPages = Math.ceil(self.streamList.total/self.limit);
@@ -550,6 +549,12 @@
 
 					return obj;
 				}, self.streamList);
+			} 
+			else {
+				this.resultContainerBody.innerHTML = "Search returned no results";
+				self.prevButton.setAttribute("style", "display : none");
+				self.nextButton.setAttribute("style", "display : none");
+				self.currentPageSpan.setAttribute("style", "display : none");
 			}
 
 			this.evaluateResult();
