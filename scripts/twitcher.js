@@ -13,7 +13,6 @@
  		var self = this;
 
  		this.input = $(input);
- 		this.input.setAttribute('autocomplete', 'false');
  		
  		o = o || {};
 
@@ -229,6 +228,9 @@
 				var trimmedInput = self.input.value.trim();
 				if(trimmedInput != ""){
 					self.evaluate("stream");
+				}
+				else {
+						self.resultContainerBody.innerHTML = "Please enter a valid query to search";
 				}
 			}
 		});
