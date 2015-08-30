@@ -155,26 +155,18 @@
 
 		$.bind(this.input, {
 
-			"input" : function() {
-				var trimmedInput = self.input.value.trim();
-				if(trimmedInput != ""){
+			"input" : function() {	
 					setTimeout(self.evaluate.bind(self, "game"), 300);	
-				}
 			},
 			"blur" : function() {
 				self.close.call(self);
 			},
 			"keydown" : function(evt) {
 				var c = evt.keyCode;
-				var trimmedInput = self.input.value.trim();
+				
 				if (document.activeElement === self.input && c===13) {
-					if(trimmedInput != "") {
 						evt.preventDefault();
 						self.evaluate("stream");
-					}
-					else {
-						self.resultContainerBody.innerHTML = "Please enter a valid query to search";
-					}
 				}
 				
 				// If the dropdown `ul` is in view, then act on keydown for the following keys:
@@ -225,13 +217,7 @@
 
 		$.bind(this.searchButton, {
 			"mousedown" : function() {
-				var trimmedInput = self.input.value.trim();
-				if(trimmedInput != ""){
-					self.evaluate("stream");
-				}
-				else {
-						self.resultContainerBody.innerHTML = "Please enter a valid query to search";
-				}
+				self.evaluate("stream");
 			}
 		});
 
@@ -331,7 +317,8 @@
 
 		evaluate : function(type, goToPage) {
 			this.queried = this.queried || [];
-			var value = this.input.value;
+			var value = this.input.value.trim();
+
 			$.gameParams.queryParams['q'] = value;
 			$.streamParams.queryParams['q'] = value;
 
@@ -345,16 +332,26 @@
 				this.evaluateList();
 			} 
 			else if(type === "stream") {
-				if(goToPage) {
-					this.post($.streamParams, type, goToPage);
-				} 
+				if(value != "") {
+					this.resultContainerHeadPaginator.setAttribute("style", "display : inline");
+			
+					if(goToPage) {
+						this.post($.streamParams, type, goToPage);
+					} 
+					else {
+						// Make an XHR request to stream
+						this.offSet = 0;
+						this.post($.streamParams, type);
+					}
+					// Re-Evaluate the result page
+					this.evaluateResult();
+				}	
 				else {
-					// Make an XHR request to stream
-					this.offSet = 0;
-					this.post($.streamParams, type);
+					this.resultContainerHeadTotal.setAttribute("style", "display : none");
+					this.resultContainerHeadTotal.innerHTML = "";
+					this.resultContainerHeadPaginator.setAttribute("style", "display : none");
+					this.resultContainerBody.innerHTML = "Please enter a valid query to search";
 				}
-				// Re-Evaluate the result page
-				this.evaluateResult();
 			}
 		},
 
@@ -396,6 +393,7 @@
 
 			if (Object.keys(self.streamList).length > 0) {
 				this.resultContainerBody.innerHTML = "";
+				this.resultContainerHeadTotal.setAttribute("style", "display : inline");
 				this.resultContainerHeadTotal.innerHTML = "Total Results : " + self.streamList.total;
 				this.currentPageSpan.setAttribute("style", "display : inline");
 				if(this.totalPages >= 1) {
