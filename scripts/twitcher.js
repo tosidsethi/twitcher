@@ -157,30 +157,34 @@
 		$.bind(this.input, {
 
 			"input" : function() {
-				setTimeout(self.evaluate.bind(self, "game"), 300);
+				var trimmedInput = self.input.value.trim();
+				if(trimmedInput != ""){
+					setTimeout(self.evaluate.bind(self, "game"), 300);	
+				}
 			},
 			"blur" : function() {
 				self.close.call(self);
 			},
 			"keydown" : function(evt) {
 				var c = evt.keyCode;
-
-				if (document.activeElement === self.input) {
+				var trimmedInput = self.input.value.trim();
+				if (document.activeElement === self.input && trimmedInput != "") {
 					if(c === 13) {
 						evt.preventDefault();
 						self.evaluate("stream");
 					}
 				}
+				else {
+
+				}
 				// If the dropdown `ul` is in view, then act on keydown for the following keys:
 				// Enter / Esc / Up / Down
 				if(self.opened) {
 					if (c === 13 && self.selected) { // Enter on a choice
-						console.log('Pressed Return on selected item');
 						evt.preventDefault();
 						self.select();
 					}
 					else if(c==13 && !self.selected) { // Enter without choosing
-						console.log('Pressed Return without selection');
 						self.close();
 						self.evaluate("stream");
 					}
@@ -196,7 +200,7 @@
 		});
 
 		$.bind(this.nextButton, {
-			mousedown : function() {
+			"mousedown" : function() {
 				if(self.currentPage < self.totalPages) {
 					if(self.streamList.hasOwnProperty("next")){
 						self.evaluate("stream", self.streamList["next"]);
@@ -208,7 +212,7 @@
 		});
 
 		$.bind(this.prevButton, {
-			mousedown : function() {
+			"mousedown" : function() {
 				if(self.offSet > 0) {
 					if(self.streamList.hasOwnProperty("prev")){
 						self.evaluate("stream", self.streamList["prev"]);
@@ -221,8 +225,10 @@
 
 		$.bind(this.searchButton, {
 			"mousedown" : function() {
-				console.log('Submitted', self.input.value);
-				self.evaluate("stream");
+				var trimmedInput = self.input.value.trim();
+				if(trimmedInput != ""){
+					self.evaluate("stream");
+				}
 			}
 		});
 
