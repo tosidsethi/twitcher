@@ -168,15 +168,16 @@
 			"keydown" : function(evt) {
 				var c = evt.keyCode;
 				var trimmedInput = self.input.value.trim();
-				if (document.activeElement === self.input && trimmedInput != "") {
-					if(c === 13) {
+				if (document.activeElement === self.input && c===13) {
+					if(trimmedInput != "") {
 						evt.preventDefault();
 						self.evaluate("stream");
 					}
+					else {
+						self.resultContainerBody.innerHTML = "Please enter a valid query to search";
+					}
 				}
-				else {
-
-				}
+				
 				// If the dropdown `ul` is in view, then act on keydown for the following keys:
 				// Enter / Esc / Up / Down
 				if(self.opened) {
@@ -525,7 +526,7 @@
 			var self = this;
 			self.streamList = {};
 			
-			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>=0) {
+			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>0) {
 				self.streamList.total = data["_total"];
 				self.streamList.offSet = self.offSet;
 				if(self.streamList.total > 0) {
