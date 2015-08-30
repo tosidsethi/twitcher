@@ -343,8 +343,6 @@
 						this.offSet = 0;
 						this.post($.streamParams, type);
 					}
-					// Re-Evaluate the result page
-					this.evaluateResult();
 				}	
 				else {
 					this.resultContainerHeadTotal.setAttribute("style", "display : none");
@@ -391,7 +389,7 @@
 			var self = this;
 			var value = this.input.value;
 
-			if (Object.keys(self.streamList).length > 0) {
+			if (Object.keys(self.streamList).length > 0 && self.streamList.total > 0) {
 				this.resultContainerBody.innerHTML = "";
 				this.resultContainerHeadTotal.setAttribute("style", "display : inline");
 				this.resultContainerHeadTotal.innerHTML = "Total Results : " + self.streamList.total;
@@ -421,14 +419,14 @@
 
 				Object.keys(self.streamList.channel)
 					.every(function(id, index) {
-						var resultObj = self.streamList.channel[id];
-						var resultDiv = self.resultDiv(id);
-						var resultDivImgPlaceholder = self.resultDivImgPlaceholder();
-						var resultDivImg = self.resultDivImg(resultObj.imgSrc);
-						var resultDivInfo = self.resultDivInfo();
-						var resultDivDisplayName = self.resultDivDisplayName(resultObj.displayName, resultObj.channelSrc);
-						var resultDivGame = self.resultDivGame(resultObj.game, resultObj.viewers);
-						var resultDivDescription = self.resultDivDescription(resultObj.description);
+						var resultObj = self.streamList.channel[id],
+							resultDiv = self.resultDiv(id),
+							resultDivImgPlaceholder = self.resultDivImgPlaceholder(),
+							resultDivImg = self.resultDivImg(resultObj.imgSrc),
+							resultDivInfo = self.resultDivInfo(),
+							resultDivDisplayName = self.resultDivDisplayName(resultObj.displayName, resultObj.channelSrc),
+							resultDivGame = self.resultDivGame(resultObj.game, resultObj.viewers),
+							resultDivDescription = self.resultDivDescription(resultObj.description);
 
 						resultDiv.appendChild(resultDivImgPlaceholder);
 						resultDivImgPlaceholder.parentNode.insertBefore(resultDivInfo, resultDivImgPlaceholder.nextSibling);
@@ -440,6 +438,14 @@
 						resultDivImgPlaceholder.appendChild(resultDivImg);
 						return index < self.limit - 1;
 					});
+			}
+			else {
+				this.resultContainerBody.innerHTML = "Search returned no results";
+				this.resultContainerHeadTotal.innerHTML = "";
+				this.resultContainerHeadTotal.setAttribute("style", "display : none")
+				this.prevButton.setAttribute("style", "display : none");
+				this.nextButton.setAttribute("style", "display : none");
+				this.currentPageSpan.setAttribute("style", "display : none");
 			}
 		},
 
@@ -529,6 +535,7 @@
 			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>0) {
 				self.streamList.total = data["_total"];
 				self.streamList.offSet = self.offSet;
+
 				if(self.streamList.total > 0) {
 					self.totalPages = Math.ceil(self.streamList.total/self.limit);	
 				}
@@ -544,7 +551,6 @@
 				if(data["_links"].hasOwnProperty("prev")) {
 					self.streamList.prev = data["_links"].prev;
 				}
-
 
 				data.streams.reduce(function(obj, value) {
 					var descString = "";
@@ -570,10 +576,7 @@
 				}, self.streamList);
 			} 
 			else {
-				this.resultContainerBody.innerHTML = "Search returned no results";
-				self.prevButton.setAttribute("style", "display : none");
-				self.nextButton.setAttribute("style", "display : none");
-				self.currentPageSpan.setAttribute("style", "display : none");
+				self.streamList.total = 0;
 			}
 
 			this.evaluateResult();
