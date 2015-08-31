@@ -154,9 +154,8 @@
 		// Bind events
 
 		$.bind(this.input, {
-
 			"input" : function() {	
-					setTimeout(self.evaluate.bind(self, "game"), 300);	
+				setTimeout(self.evaluate.bind(self, "game"), 300);	
 			},
 			"blur" : function() {
 				self.close.call(self);
@@ -226,11 +225,9 @@
 				var li = evt.target;
 
 				if (li !== this) {
-
 					while (li && !/li/i.test(li.nodeName)) {
 						li = li.parentNode;
 					}
-
 					if (li) {
 						self.select(li);
 						self.evaluate.bind(self, "stream");
@@ -238,7 +235,6 @@
 				}
 			}
 		});
-
 				
 		this.bufferList = o.bufferList || {};
 		this.streamList = {};
@@ -247,7 +243,6 @@
  	} 
 
  	Twitcher.prototype = {
-
 		get selected() {
 			return this.index > -1;
 		},
@@ -394,6 +389,7 @@
 				this.resultContainerHeadTotal.setAttribute("style", "display : inline");
 				this.resultContainerHeadTotal.innerHTML = "Total Results : " + self.streamList.total;
 				this.currentPageSpan.setAttribute("style", "display : inline");
+
 				if(this.totalPages >= 1) {
 					this.currentPageSpan.innerHTML = this.currentPage + "/" + this.totalPages;	
 				} 
@@ -589,7 +585,7 @@
 
 	Twitcher.FILTER_CONTAINS = function (text, input) {
 		return RegExp($.regExpEscape(input.trim()), "i").test(text);
-	};
+	}
 
 	// Private methods
 
