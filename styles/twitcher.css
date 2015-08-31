@@ -157,11 +157,16 @@
 .resultDivImg {
 	float: left;
 }
+
 .resultDivImgPlaceholder {
 	width: 320px;
 	height: 180px;
 	float: left;
 	display: block;
+	background-color: #6441a5;
+	color: #FFF;
+	font-size: 15px;
+	font-weight: bold;
 }
 
 .resultDivDisplayName {
