@@ -40,7 +40,7 @@
 			},
 			resultDivImgPlaceholder : function() {
 				return $.create("div", {
-					className : "resultDivImgPlaceholder",
+					className : "resultDivImgPlaceholder"
 				});
 			},
 			resultDivInfo : function() {
