@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Twitcher : TWITCH.TV Search Stream</title>
+	<title>Twitcher: TWITCH.TV Search Stream</title>
 	<link rel="stylesheet" type="text/css" href="styles/twitcher.css"/>
 	<script type="text/javascript" src="scripts/twitcher.js"></script>
 	<script type="text/javascript">
@@ -9,25 +9,25 @@
 		$$ = Twitcher.$$;
 
 		$.gameParams = {
-			headers : {
-				'Accept' : 'application/vnd.twitchtv.v3+json'
+			headers: {
+				'Accept': 'application/vnd.twitchtv.v3+json'
 			},
-			method : 'GET',
-			url : 'https://api.twitch.tv/kraken/search/games',
-			queryParams : {
-				type : 'suggest',
-				live : 'true'
+			method: 'GET',
+			url: 'https://api.twitch.tv/kraken/search/games',
+			queryParams: {
+				type: 'suggest',
+				live: 'true'
 			}
 		}
 
 		$.streamParams = {
-			headers : {
-				'Accept' : 'application/vnd.twitchtv.v3+json'
+			headers: {
+				'Accept': 'application/vnd.twitchtv.v3+json'
 			},
-			method : 'GET',
-			url : 'https://api.twitch.tv/kraken/search/streams',
-			queryParams : {
-				limit : '5'
+			method: 'GET',
+			url: 'https://api.twitch.tv/kraken/search/streams',
+			queryParams: {
+				limit: '5'
 			}
 		}
 	</script>

@@ -6,8 +6,7 @@
  * Under MIT Licence
  * (c) 2015, Sid Sethi
  */
-
- var Twitcher = (function() {
+var Twitcher = (function() {
  	var Twitcher = function(input, o) {
 
  		var self = this;
@@ -17,68 +16,68 @@
  		o = o || {};
 
  		configure.call(this, {
-			minChars : 2,
-			maxItems : 5,
-			autoFirst : false,
-			filter : Twitcher.FILTER_CONTAINS,
-			offSet : 0,
-			limit : 5,
-			totalPages : null,
-			currentPage : null,
+			minChars: 2,
+			maxItems: 5,
+			autoFirst: false,
+			filter: Twitcher.FILTER_CONTAINS,
+			offSet: 0,
+			limit: 5,
+			totalPages: null,
+			currentPage: null,
 
-			resultDiv : function(idd) {
+			resultDiv: function(idd) {
 				return $.create("div", {
-					id : idd,
-					className : "twitcher-result-body-stream"
+					id: idd,
+					className: "twitcher-result-body-stream"
 				});
 			},
-			resultDivImg : function(imgSrc) {
+			resultDivImg: function(imgSrc) {
 				return $.create("img", {
-					src : imgSrc,
-					className : "resultDivImg"
+					src: imgSrc,
+					className: "resultDivImg"
 				});
 			},
-			resultDivImgPlaceholder : function() {
+			resultDivImgPlaceholder: function() {
 				return $.create("div", {
-					className : "resultDivImgPlaceholder"
+					className: "resultDivImgPlaceholder"
 				});
 			},
-			resultDivInfo : function() {
+			resultDivInfo: function() {
 				return $.create("div", {
-					className : "resultDivInfo"
+					className: "resultDivInfo"
 				});
 			},
-			resultDivDisplayName : function(displayName, channelSrc) {
+			resultDivDisplayName: function(displayName, channelSrc) {
 				return $.create("a", {
-					href : channelSrc,
-					className : "resultDivDisplayName",
-					innerHTML : displayName
+					href: channelSrc,
+					className: "resultDivDisplayName",
+					innerHTML: displayName
 				});
 			},
-			resultDivGame : function(game, viewers) {
+			resultDivGame: function(game, viewers) {
 				return $.create("span", {
-					className : "resultDivGame",
-					innerHTML : game + " - " + viewers + " viewers"
+					className: "resultDivGame",
+					innerHTML: game + " - " + viewers + " viewers"
 				});
 			},
-			resultDivDescription : function(description) {
+			resultDivDescription: function(description) {
 				return $.create("p", {
-					className : "resultDivDescription",
-					innerHTML : description
+					className: "resultDivDescription",
+					innerHTML: description
 				});
 			},
-			item : function(text, input) {
+			item: function(text, input) {
 				return $.create("li", {
 					innerHTML: "<span>" + text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>") + "</span>",
 					id:text
 				});			
 			},
-			itemImg : function(text) {
+			itemImg: function(text) {
 				return $.create("img", {
-					src : self.bufferList[text]
+					src: self.bufferList[text]
 				});
 			},
-			replace : function(text) {
+			replace: function(text) {
 				this.input.value = text;
 			}
 		}, o);
@@ -86,81 +85,80 @@
 		this.index = -1;
 
 		// Create Twitcher skeleton
-
 		this.searchContainer = $.create("section", {
-			className : "twitcher-search",
-			around : input
+			className: "twitcher-search",
+			around: input
 		});
 
 		this.searchButton = $.create("button", {
-			className : "twitcher-submit",
-			"type" : "button",
-			innerHTML : "Search",
-			after : input
+			className: "twitcher-submit",
+			"type": "button",
+			innerHTML: "Search",
+			after: input
 		});
 
 		this.searchUList = $.create("ul", {
-			className : "twitcher-search-list",
-			hidden : "",
-			inside : this.searchContainer
+			className: "twitcher-search-list",
+			hidden: "",
+			inside: this.searchContainer
 		});
 
 		this.resultContainer = $.create("section", {
-			className : "twitcher-result",
-			after : this.searchContainer
+			className: "twitcher-result",
+			after: this.searchContainer
 		});
 		
 		this.resultContainerHead = $.create("div", {
-			className : "twitcher-result-head",
-			inside : this.resultContainer
+			className: "twitcher-result-head",
+			inside: this.resultContainer
 		});
 		
 		this.resultContainerBody = $.create("div", {
-			className : "twitcher-result-body",
-			after : this.resultContainerHead
+			className: "twitcher-result-body",
+			after: this.resultContainerHead
 		});
 
 		this.resultContainerHeadTotal = $.create("span", {
-			className : "twitcher-search-total",
-			inside : this.resultContainerHead
+			className: "twitcher-search-total",
+			inside: this.resultContainerHead
 		});
 
 		this.resultContainerHeadPaginator = $.create("span", {
-			className : "twitcher-search-paginator",
-			after : this.resultContainerHeadTotal
+			className: "twitcher-search-paginator",
+			after: this.resultContainerHeadTotal
 		});
 
 		this.prevButton = $.create("span", {
-			className : "prev-button",
-			inside : this.resultContainerHeadPaginator
+			className: "prev-button",
+			inside: this.resultContainerHeadPaginator
 		});
 
 		this.currentPageSpan = $.create("span", {
-			className : "current-page",
-			after : this.prevButton
+			className: "current-page",
+			after: this.prevButton
 		});
 		
 		this.nextButton = $.create("span", {
-			className : "next-button",
-			after : this.currentPageSpan
+			className: "next-button",
+			after: this.currentPageSpan
 		});
 		
 		this.status = $.create("span", {
-			className : "visually-hidden",
-			role : "status",
-			inside : this.searchContainer
+			className: "visually-hidden",
+			role: "status",
+			inside: this.searchContainer
 		});
 
 		// Bind events
 
 		$.bind(this.input, {
-			"input" : function() {	
+			"input": function() {	
 				setTimeout(self.evaluate.bind(self, "game"), 300);	
 			},
-			"blur" : function() {
+			"blur": function() {
 				self.close.call(self);
 			},
-			"keydown" : function(evt) {
+			"keydown": function(evt) {
 				var c = evt.keyCode;
 				
 				if (document.activeElement === self.input && c===13) {
@@ -170,12 +168,12 @@
 				
 				// If the dropdown `ul` is in view, then act on keydown for the following keys:
 				// Enter / Esc / Up / Down
-				if(self.opened) {
+				if (self.opened) {
 					if (c === 13 && self.selected) { // Enter on a choice
 						evt.preventDefault();
 						self.select();
 					}
-					else if(c==13 && !self.selected) { // Enter without choosing
+					else if (c==13 && !self.selected) { // Enter without choosing
 						self.close();
 						self.evaluate("stream");
 					}
@@ -184,16 +182,16 @@
 					}
 					else if (c === 38 || c === 40) { // Down/Up arrow
 						evt.preventDefault();
-						self[c === 38? "previous" : "next"]();
+						self[c === 38? "previous": "next"]();
 					}
 				}
 			}
 		});
 
 		$.bind(this.nextButton, {
-			"mousedown" : function() {
-				if(self.currentPage < self.totalPages) {
-					if(self.streamList.hasOwnProperty("next")){
+			"mousedown": function() {
+				if (self.currentPage < self.totalPages) {
+					if (self.streamList.hasOwnProperty("next")){
 						self.evaluate("stream", self.streamList["next"]);
 						self.offSet += self.limit;
 						self.currentPage = Math.abs((self.limit + self.offSet)/self.limit);
@@ -203,9 +201,9 @@
 		});
 
 		$.bind(this.prevButton, {
-			"mousedown" : function() {
-				if(self.offSet > 0) {
-					if(self.streamList.hasOwnProperty("prev")){
+			"mousedown": function() {
+				if (self.offSet > 0) {
+					if (self.streamList.hasOwnProperty("prev")){
 						self.evaluate("stream", self.streamList["prev"]);
 						self.offSet -= self.limit;
 						self.currentPage = Math.abs((self.offSet-self.limit)/self.limit);
@@ -215,13 +213,13 @@
 		});
 
 		$.bind(this.searchButton, {
-			"mousedown" : function() {
+			"mousedown": function() {
 				self.evaluate("stream");
 			}
 		});
 
 		$.bind(this.searchUList, {
-			"mousedown" : function(evt) {
+			"mousedown": function(evt) {
 				var li = evt.target;
 
 				if (li !== this) {
@@ -251,14 +249,14 @@
 			return this.searchUList && this.searchUList.getAttribute("hidden") == null;
 		},
 
-		close : function() {
-			if(this.opened){
+		close: function() {
+			if (this.opened){
 				this.searchUList.setAttribute("hidden", "");
 				this.index = -1;
 			}
 		},
 
-		open : function() {
+		open: function() {
 			this.searchUList.removeAttribute("hidden");
 
 			if (this.autoFirst && this.index === -1) {
@@ -266,20 +264,20 @@
 			}
 		},
 
-		next : function() {
+		next: function() {
 			var count = this.searchUList.children.length;
 
-			this.goto(this.index < count - 1? this.index + 1 : -1);
+			this.goto(this.index < count - 1? this.index + 1: -1);
 		},
 
-		previous : function() {
+		previous: function() {
 			var count = this.searchUList.children.length;
 
-			this.goto(this.selected? this.index - 1 : count - 1);
+			this.goto(this.selected? this.index - 1: count - 1);
 		},
 
 		// Should not be used, highlights specific item without any checks!
-		goto : function(i) {
+		goto: function(i) {
 			var lis = this.searchUList.children;
 
 			if (this.selected) {
@@ -292,11 +290,11 @@
 			if (i > -1 && lis.length > 0) {
 				lis[i].setAttribute("selected", "true");
 				this.status.textContent = lis[i].textContent;
-				lis[i].setAttribute("style", "background-color : #9B87FF")
+				lis[i].setAttribute("style", "background-color: #9B87FF")
 			}
 		},
 
-		select : function(selected) {
+		select: function(selected) {
 			selected = selected || this.searchUList.children[this.index];
 
 			if (selected) {
@@ -310,27 +308,26 @@
 			setTimeout(this.evaluate.bind(this, "stream"), 200);
 		},
 
-		evaluate : function(type, goToPage) {
+		evaluate: function(type, goToPage) {
 			this.queried = this.queried || [];
 			var value = this.input.value.trim();
 
 			$.gameParams.queryParams['q'] = value;
 			$.streamParams.queryParams['q'] = value;
 
-			if(type === "game") {
-				if(this.queried.indexOf(value) === -1) {
+			if (type === "game") {
+				if (this.queried.indexOf(value) === -1) {
 					this.queried.push(value);
 					// Make an XHR request (if the term hasn't already been queried)
 					this.post($.gameParams, type);
 				}
 				// Re-Evaluate the existing items
 				this.evaluateList();
-			} 
-			else if(type === "stream") {
-				if(value != "") {
-					this.resultContainerHeadPaginator.setAttribute("style", "display : inline");
+			} else if (type === "stream") {
+				if (value != "") {
+					this.resultContainerHeadPaginator.setAttribute("style", "display: inline");
 			
-					if(goToPage) {
+					if (goToPage) {
 						this.post($.streamParams, type, goToPage);
 					} 
 					else {
@@ -340,15 +337,15 @@
 					}
 				}	
 				else {
-					this.resultContainerHeadTotal.setAttribute("style", "display : none");
+					this.resultContainerHeadTotal.setAttribute("style", "display: none");
 					this.resultContainerHeadTotal.innerHTML = "";
-					this.resultContainerHeadPaginator.setAttribute("style", "display : none");
+					this.resultContainerHeadPaginator.setAttribute("style", "display: none");
 					this.resultContainerBody.innerHTML = "Please enter a valid query to search";
 				}
 			}
 		},
 
-		evaluateList : function() {
+		evaluateList: function() {
 			var self = this;
 			var value = this.input.value;
 
@@ -380,36 +377,33 @@
 			}
 		},
 
-		evaluateResult : function() {
+		evaluateResult: function() {
 			var self = this;
 			var value = this.input.value;
 
 			if (Object.keys(self.streamList).length > 0 && self.streamList.total > 0) {
 				this.resultContainerBody.innerHTML = "";
-				this.resultContainerHeadTotal.setAttribute("style", "display : inline");
-				this.resultContainerHeadTotal.innerHTML = "Total Results : " + self.streamList.total;
-				this.currentPageSpan.setAttribute("style", "display : inline");
+				this.resultContainerHeadTotal.setAttribute("style", "display: inline");
+				this.resultContainerHeadTotal.innerHTML = "Total Results: " + self.streamList.total;
+				this.currentPageSpan.setAttribute("style", "display: inline");
 
-				if(this.totalPages >= 1) {
+				if (this.totalPages >= 1) {
 					this.currentPageSpan.innerHTML = this.currentPage + "/" + this.totalPages;	
-				} 
-				else {
-					this.currentPageSpan.setAttribute("style", "display : none");
+				} else {
+					this.currentPageSpan.setAttribute("style", "display: none");
 				}
 				
-				if(self.offSet==0){
-					self.prevButton.setAttribute("style", "display : none");
-				}
-				else {
-					self.prevButton.setAttribute("style", "display : inline");
+				if (self.offSet==0){
+					self.prevButton.setAttribute("style", "display: none");
+				} else {
+					self.prevButton.setAttribute("style", "display: inline");
 					self.prevButton.innerHTML = "Prev";
 				}
 
-				if(self.currentPage == self.totalPages && self.totalPages > 0){
-					self.nextButton.setAttribute("style", "display : none");
-				}
-				else {
-					self.nextButton.setAttribute("style", "display : inline");
+				if (self.currentPage == self.totalPages && self.totalPages > 0){
+					self.nextButton.setAttribute("style", "display: none");
+				} else {
+					self.nextButton.setAttribute("style", "display: inline");
 					self.nextButton.innerHTML = "Next";
 				}
 
@@ -434,117 +428,112 @@
 						resultDivImgPlaceholder.appendChild(resultDivImg);
 						return index < self.limit - 1;
 					});
-			}
-			else {
+			} else {
 				this.resultContainerBody.innerHTML = "Search returned no results";
 				this.resultContainerHeadTotal.innerHTML = "";
-				this.resultContainerHeadTotal.setAttribute("style", "display : none")
-				this.prevButton.setAttribute("style", "display : none");
-				this.nextButton.setAttribute("style", "display : none");
-				this.currentPageSpan.setAttribute("style", "display : none");
+				this.resultContainerHeadTotal.setAttribute("style", "display: none")
+				this.prevButton.setAttribute("style", "display: none");
+				this.nextButton.setAttribute("style", "display: none");
+				this.currentPageSpan.setAttribute("style", "display: none");
 			}
 		},
 
-		post : function(custParams, type, goToPage) {
-		    var headers     = custParams.headers,
-	            headersKeys = Object.getOwnPropertyNames(headers),
-	            method      = custParams.method,
-	            url         = custParams.url,
-	            self		= this,
-	            offSet 		= "offset=" + this.offSet,
-	            i;
+		post: function(custParams, type, goToPage) {
+	    var headers     = custParams.headers,
+          headersKeys = Object.getOwnPropertyNames(headers),
+          method      = custParams.method,
+          url         = custParams.url,
+          self				= this,
+          offSet 			= "offset=" + this.offSet,
+          i;
 
-    		if(Object.keys(this.bufferList).length > 0 && Object.keys(this.bufferList).length >= 250){
-    			this.bufferList = {};
-    		}
+  		if (Object.keys(this.bufferList).length > 0 && Object.keys(this.bufferList).length >= 250) {
+  			this.bufferList = {};
+  		}
 
-	        if (method.match(/^GET$/i)) {
-	        	url += "?";
-	        	for(var query in custParams.queryParams) {
-	        		var param = query + "=" + custParams.queryParams[query]+"&";
-	        		url += param;
-	        	}
+      if (method.match(/^GET$/i)) {
+      	url += "?";
+      	for (var query in custParams.queryParams) {
+      		var param = query + "=" + custParams.queryParams[query]+"&";
+      		url += param;
+      	}
 
-	        	url += offSet + "&";
+      	if (type === 'game') {
+      		$jsonp.send(url+'callback=twitcher', {
+	        	callbackName: 'twitcher',
+	        	onSuccess: function(data) {
+				      self.parseObj(data);
+				    },
+				    onTimeout: function() {
+				      console.log('timeout!');
+				    },
+			    	timeout: 5
+					});
+      	} else if (type === 'stream') {
+      		url += offSet + "&";
+       		self.streamList = {};
 
-	        	if(type === 'game') {
-	        		$jsonp.send(url+'callback=twitcher', {
-			        	callbackName: 'twitcher',
-			        	onSuccess : function(data) {
-					      self.parseObj(data);
+       		if (goToPage){
+       			$jsonp.send(goToPage+"&"+'callback=twitcher', {
+		        	callbackName: 'twitcher',
+		        	onSuccess: function(data) {
+					      self.parseResult(data);
 					    },
-					    onTimeout : function() {
+					    onTimeout: function() {
 					      console.log('timeout!');
 					    },
 					    timeout: 5
-					});
-	        	}
-		       	else if(type === 'stream') {
-		       		self.streamList = {};
-
-		       		if(goToPage){
-		       			$jsonp.send(goToPage+"&"+'callback=twitcher', {
-				        	callbackName: 'twitcher',
-				        	onSuccess : function(data) {
-						      self.parseResult(data);
-						    },
-						    onTimeout : function() {
-						      console.log('timeout!');
-						    },
-						    timeout: 5
 						});
-		       		}
-		       		else {
-		       			$jsonp.send(url +'callback=twitcher', {
-				        	callbackName: 'twitcher',
-				        	onSuccess : function(data) {
-						      self.parseResult(data);
-						    },
-						    onTimeout : function() {
-						      console.log('timeout!');
-						    },
-						    timeout: 5
+       		} else {
+       			$jsonp.send(url +'callback=twitcher', {
+			        callbackName: 'twitcher',
+			        onSuccess: function(data) {
+					      self.parseResult(data);
+					    },
+					    onTimeout: function() {
+					      console.log('timeout!');
+					    },
+					    timeout: 5
 						});
-		       		}
-		       	}
-	        }
-    	},
+       		}
+       	}
+      }
+	  },
 
-    	parseObj : function(data) {
-    		var self = this;
-    		self.bufferList = self.bufferList || {};
-    		
-    		if(data.hasOwnProperty('games') && data.games.length>0) {
-    			data.games.reduce(function(obj, value) {
-    				obj[value.name] = value.box.small;
-    				return obj;
-    			}, self.bufferList);
-    		}
-    		
-    		this.evaluateList();
+  	parseObj: function(data) {
+  		var self = this;
+  		self.bufferList = self.bufferList || {};
+  		
+  		if (data.hasOwnProperty('games') && data.games.length>0) {
+  			data.games.reduce(function(obj, value) {
+  				obj[value.name] = value.box.small;
+  				return obj;
+  			}, self.bufferList);
+  		}
+  		
+  		this.evaluateList();
 		},
 
-		parseResult : function(data) {
+		parseResult: function(data) {
 			var self = this;
 			self.streamList = {};
 			
-			if(data.hasOwnProperty('streams') && parseInt(data["_total"])>0) {
+			if (data.hasOwnProperty('streams') && parseInt(data["_total"])>0) {
 				self.streamList.total = data["_total"];
 				self.streamList.offSet = self.offSet;
 
-				if(self.streamList.total > 0) {
+				if (self.streamList.total > 0) {
 					self.totalPages = Math.ceil(self.streamList.total/self.limit);	
-				}
-				else self.totalPages = 0;
+				} else self.totalPages = 0;
 				
 				self.currentPage = Math.abs((self.limit + self.offSet)/self.limit);
 				self.streamList.channel = {};
 				
-				if(data["_links"].hasOwnProperty("next")) {
+				if (data["_links"].hasOwnProperty("next")) {
 					self.streamList.next = data["_links"].next;
 				}
 
-				if(data["_links"].hasOwnProperty("prev")) {
+				if (data["_links"].hasOwnProperty("prev")) {
 					self.streamList.prev = data["_links"].prev;
 				}
 
@@ -555,14 +544,14 @@
 					obj.channel[value["_id"]].imgSrc = value.preview.medium;
 					obj.channel[value["_id"]].channelSrc = value.channel.url;
 					
-					if(value.channel.game == null){
+					if (value.channel.game == null){
 						obj.channel[value["_id"]].game = "Name of Game not present";	
 					} 
 					else obj.channel[value["_id"]].game = value.channel.game;
 					
 					obj.channel[value["_id"]].viewers = value.viewers;
 					
-					if(value.channel.length > 500){
+					if (value.channel.length > 500){
 						descString = value.channel.substring(0,500) + "...";
 						obj.channel[value["_id"]].description = descString;	
 					}
@@ -570,8 +559,7 @@
 
 					return obj;
 				}, self.streamList);
-			} 
-			else {
+			} else {
 				self.streamList.total = 0;
 			}
 
@@ -580,7 +568,6 @@
 	};
 
 	// Static methods/properties
-	
 	Twitcher.all = [];
 
 	Twitcher.FILTER_CONTAINS = function (text, input) {
@@ -588,10 +575,9 @@
 	}
 
 	// Private methods
-
 	function configure(properties, o) {
 		for (var i in properties) {
-			var initial = properties[i],
+			var initial 	= properties[i],
 			    attrValue = this.input.getAttribute("data-" + i.toLowerCase());
 
 			if (typeof initial === "number") {
@@ -608,17 +594,16 @@
 			}
 
 			if (!this[i] && this[i] !== 0) {
-				this[i] = (i in o)? o[i] : initial;
+				this[i] = (i in o)? o[i]: initial;
 			}
 		}
 	}
 
 	// Helper functions
-	
 	var slice = Array.prototype.slice;
 
 	function $(expr, con) {
-		return typeof expr === "string"? (con || document).querySelector(expr) : expr || null;
+		return typeof expr === "string"? (con || document).querySelector(expr): expr || null;
 	}
 
 	function $$(expr, con) {
@@ -628,36 +613,36 @@
 	var $jsonp = (function() {
 		var result = {};
 
-	  	result.send = function(src, options) {
-	    	var options = options || {},
+  	result.send = function(src, options) {
+    	var options 			= options || {},
 	      	callback_name = options.callbackName || 'callback',
-	      	on_success = options.onSuccess || function(){},
-	      	on_timeout = options.onTimeout || function(){},
-	      	timeout = options.timeout || 10;
+	      	on_success 		= options.onSuccess || function(){},
+	      	on_timeout		= options.onTimeout || function(){},
+	      	timeout 			= options.timeout || 10;
 
-	    	var timeout_trigger = window.setTimeout(function() {
-	      		window[callback_name] = function(){};
-	      		on_timeout();
-	    		}, timeout * 1000);
+    	var timeout_trigger = window.setTimeout(function() {
+    		window[callback_name] = function(){};
+    		on_timeout();
+  		}, timeout * 1000);
 
-	    	window[callback_name] = function(data) {
-	      		window.clearTimeout(timeout_trigger);
-	      		on_success(data);
-	    	};
+    	window[callback_name] = function(data) {
+    		window.clearTimeout(timeout_trigger);
+    		on_success(data);
+    	};
 
-	    	var script = document.createElement('script');
-	    	script.type = 'text/javascript';
-	    	script.async = true;
-	    	script.src = src;
+    	var script = document.createElement('script');
+    	script.type = 'text/javascript';
+    	script.async = true;
+    	script.src = src;
 
-	    	document.getElementsByTagName('head')[0].appendChild(script);
+    	document.getElementsByTagName('head')[0].appendChild(script);
 
-	    	script.onload = function() {
-	            this.remove();
-	        }
-	  	}
+    	script.onload = function() {
+        this.remove();
+      }
+  	}
 
-	  	return result;
+  	return result;
 	})();
 
  	$.create = function(tag, o) {
@@ -734,5 +719,4 @@
 	}
 
 	return Twitcher;
- })();
-
+})();
