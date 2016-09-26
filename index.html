@@ -16,7 +16,8 @@
 			url: 'https://api.twitch.tv/kraken/search/games',
 			queryParams: {
 				type: 'suggest',
-				live: 'true'
+				live: 'true',
+				client_id: 'h6h1ypcvjn2o1wsiko0ygcko1jzumh'
 			}
 		}
 
@@ -27,6 +28,7 @@
 			method: 'GET',
 			url: 'https://api.twitch.tv/kraken/search/streams',
 			queryParams: {
+				client_id: 'h6h1ypcvjn2o1wsiko0ygcko1jzumh',
 				limit: '5'
 			}
 		}
